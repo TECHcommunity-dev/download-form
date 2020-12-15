@@ -1,0 +1,38 @@
+form.marketo-form{
+    input[type="text"],textarea,select {
+        width: 100%;
+        max-width: 250px;
+        margin-bottom: 5px;
+        background-color: var(--secondary);
+        border: 1px solid var(--primary-medium);
+        min-height: 30px;
+        font-size: 1.07em;
+    }
+    
+    select{
+        padding: 4px 6px;
+    }
+    
+    ul{
+        margin: 0 0 9px 0px;    
+    }
+    
+    ul li{
+        list-style: none;
+    }
+    
+    li.mktFormReq label{
+        font-weight: bold;
+        background: url($backRequiredGray) no-repeat right 0px;
+    }
+    
+    span.mktInput{
+    }
+    
+    span.mktFormMsg {
+        color: red;
+        display: block;
+        margin-bottom: 10px;
+    }
+    
+}

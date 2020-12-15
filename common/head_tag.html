@@ -1,0 +1,502 @@
+<!-- SYSTEM JAVASCRIPT - DO NOT EDIT -->
+<script type="text/javascript">
+function fieldValidate(field) {
+  /* call Mkto.setError(field, message) and return false to mark a field value invalid */
+  /* return 'skip' to bypass the built-in validations */
+  return true;
+}
+</script>
+<script type="text/javascript" src="//munchkin.marketo.net/munchkin.js"></script>
+
+<script type="text/javascript">
+var profiling = {
+  isEnabled: false,
+  numberOfProfilingFields: 3,
+  alwaysShowFields: [ 'mktDummyEntry']
+};
+var mktFormLanguage = 'English'
+</script>
+<script type="text/javascript" src="//info.softwareag.com/js/mktFormSupport.js"></script>
+<script type="text/javascript">
+const { h } = require('virtual-dom');
+  function formSubmit(elt) {
+    return Mkto.formSubmit(elt);
+  }
+  function formReset(elt) {
+    return Mkto.formReset(elt);
+  }
+</script>
+
+<!-- Created Theme component to add Download form in Discourse [By Webdirekt on 02-11-2020] -->
+<script type="text/discourse-plugin" version="0.8">
+ const { h } = require('virtual-dom');
+ const DiscourseURL = require('discourse/lib/url').default;
+
+/* Below code will render "download_form" widget before rendering "post-menu" widget on Topic page*/
+api.decorateWidget("post-menu:before", helper => { 
+  const path = window.location.pathname;
+  let marketoFormId = null;
+  let marketoFormAction = null;
+  if(/^\/t\/webmethods-free-trial-download\//.test(path)){
+      marketoFormId = "mktForm_1122";
+      marketoFormAction = "//info.softwareag.com/index.php/leadCapture/save";
+  } 
+  else if(/^\/t\/adabas-and-natural-for-docker-download-form\//.test(path)){
+      marketoFormId = "mktForm_5741";
+      marketoFormAction = "//info.softwareag.com/index.php/leadCapture/save";
+  }
+  else if(/^\/t\/webmethods-service-designer-download-form\//.test(path)){
+      marketoFormId = "mktoForm_8655";
+      marketoFormAction = "//info.softwareag.com/index.php/leadCapture/save";
+  }
+  else{
+      //do nothing;
+  }
+  
+  if (helper.attrs.firstPost && marketoFormId) { 
+      helper.attrs.marketoFormId = marketoFormId;
+      helper.attrs.marketoFormAction = marketoFormAction;
+      return helper.attach("download_form", helper.attrs); 
+  } 
+ 
+}); 
+
+function checkNull(value){
+        if(typeof(value) != "undefined" && value != null && value !='null'){
+            return value;
+        } 
+        return "";
+    }
+
+/* Created new download_form widget which will display only if current URL contains  "/t/webmethods-free-trial/" */
+api.createWidget("download_form", {
+  tagName: "div.d-form",
+  html(attrs) {
+      let result = [];
+      //Generating Submitting button
+         let button = this.attach("download_button", {
+            title: "Submit",
+            label: "Submit",
+            action: "",
+            actionParam: "",
+            className: "btn collapse-up",
+            marketoFormId: attrs.marketoFormId
+          });
+        const path = window.location.pathname;
+         if(true) {
+                var currentusername = Discourse.User.currentProp('username'); 
+                if (currentusername  && typeof currentusername !== 'undefined'){
+                    var fulllinktojson = "/users/" + currentusername + ".json"; 
+                    
+                     $.ajax({
+                        type: 'GET',
+                        url: fulllinktojson,
+                        dataType: 'json',
+                        success: function(json) {
+                            //List if banned countries
+                            let bannedCountries = ["Afghanistan","Algeria","Angola","Armenia","Azerbaijan","Belarus","Birma/Myanmar","Burundi","Cambodia","Central African Republic","China","Congo","Cyprus","Democratic Rep. Of Congo","Egypt","Eritrea","Ethiopia","Georgia","Guinea","Guinea-Bissau","Haiti","Iraq","Israel","Jordan","Kazakhstan","Kyrgyzstan","Laos","Lebanon","Libya","Macau","Mali","Moldova","Mongolia","Mozambique","Myanmar","Nigeria","Pakistan","Russia","Russian federation","Somalia","South Sudan","Sri Lanka","Tajikistan","Tanzania","Tunisia","Turkmenistan","Uganda","Ukraine","Uzbekistan","Venezuela","Vietnam","Yemen","Zimbabwe"];
+                            
+                            let isBelongsToBannedCountry = false;
+                            let isBelongsToDownloadsGroup = false;
+                            
+                            /*
+                            ** Getting Current Login User Deatils.
+                            */
+                            //Email
+                            var currentuserEmail = String(json.user.email);
+                            //First Name
+                            var currentuserFirstName = checkNull(String(json.user.user_fields[6]));
+                            //Last Name
+                            var currentuserLastName = checkNull(String(json.user.user_fields[7]));
+                            //Job Title
+                            var currentuserJob = checkNull(String(json.user.user_fields[23]));
+                            //Country
+                            var currentuserCountry = checkNull(String(json.user.user_fields[5]));
+                            //Company
+                            var currentuserCompany = checkNull(String(json.user.user_fields[8]));
+                            // State
+                            var currentuserState = checkNull(String(json.user.user_fields[1]));
+                            // Province
+                            var currentuserProvince = checkNull(String(json.user.user_fields[24]));
+                            //Groups
+                            var currentuserGroups = [];
+                            (json.user.groups).forEach(function (groupObj, index) {
+                                currentuserGroups.push(String(groupObj.name).toLowerCase());
+                            });
+                            
+                            //check whether user belongs to banned country
+                            var lowerCaseBannedCountries = bannedCountries.map(function(value) {
+                              return value.toLowerCase();
+                            });
+                            if(lowerCaseBannedCountries.indexOf(currentuserCountry.toLowerCase()) !== -1){
+                                isBelongsToBannedCountry = true;    
+                            }
+                            
+                            //check whether user belongs to Downloads group
+                            if(currentuserGroups.indexOf(("Downloads").toLowerCase()) !== -1){
+                                isBelongsToDownloadsGroup = true;    
+                            }
+                            
+                            //If user belongs to Banned Country and not present in Downlads group
+                            if(isBelongsToBannedCountry && !isBelongsToDownloadsGroup){
+                                DiscourseURL.routeToUrl('/g/Downloads');
+                            }
+                            // Else Display Download Form.
+                            else{
+                                //List of Displayed fields with key value pair.
+                                let displayFields = {};
+                                //List of Hidden fields with key value pair. 
+                                let hiddenFields = {};
+                                
+                                //List of Countries
+                                let countrieOptions = ["Select Country","Afghanistan","Albania","Algeria","American Samoa","Andorra","Angola","Anguilla","Antigua and Barbuda","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bermuda","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Bouvet Island","Brazil","British Indian Ocean Territory","British Virgin Islands","Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Canada","Cape Verde","Cayman Islands","Central African Republic","Chad","Chile","China","Christmas Island","Cocos (Keeling) Islands","Colombia","Comoros","Congo","Cook Islands","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Cote d&#039;Ivoire","Democratic Republic of the Congo","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Ethiopia","Falkland Islands","Faroe Islands","Fiji Islands","Finland","France","French Guiana","French Polynesia","French Southern Territories","Gabon","Gambia","Georgia","Germany","Ghana","Gibraltar","Greece","Greenland","Grenad","Guadeloupe","Guam","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Heard Island and McDonald Islands","Honduras","Hong Kong","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Macao S.A.R.","China","China","Macedonia","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Martinique","Mauritania","Mauritius","Mayotte","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montserrat","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","Netherlands Antilles","New Caledonia","New Zealand","Nicaragua","Niger","Nigeria","Niue","Norfolk Island","North Korea","Northern Mariana Islands","Norway","Oman","Pakistan","Palau","Palestinian Territory","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Pitcairn","Poland","Portugal","Puerto Rico","Qatar","Reunion","Romania","Russia","Rwanda","Saint Helena","Saint Kitts","Saint Lucia","Saint Pierre and Miquelon","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabi","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","Spain","Sri Lanka","Sudan","Suriname","Svalbard and Jan Mayen","Swaziland","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tokelau","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Turks and Caicos Islands","Tuvalu","U.S. Virgin Islands","Uganda","Ukraine","United Arab Emirates","United Kingdom","USA","United States Minor Outlying Islands","Uruguay","Uzbekistan","Vanuatu","Vatican","Venezuela","Vietnam","Wallis and Futuna","Western Sahara","Yemen","Zambia","Zimbabwe"]
+                                //List of State / Province
+                                let stateOptions = ["Select State","International","AK","AL","AR","AZ","CA","CO","CT","DE","FL","GA","HI","IA","ID","IL","IN","KS","KY","LA","MA","MD","ME","MI","MN","MO","MS","MT","NC","ND","NE","NH","NJ","NM","NV","NY","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VA","VT","WA","WI","WV"];
+                                let yesNoOptions = ["Please select", "Yes", "No"];
+                                //List of Salutations
+                                let salutationOptions = ["Please Select","Mr.", "Mrs.", "Ms.", "Dr.", "Prof."];
+                                let jobRoleOptions = ["Please Select", "Business / IT Analyst", "Buyer", "CEO / CFO / COO", "CIO / CTO", "Compliance & Risk Officer", "Developer", "Digital Strategy / Innovation Leader", "Director / Vice President of IT", "IT / Enterprise Architect", "IT Consultant / Software Engineer", "IT Manager / IT Project Manager", "Omni-Channel Retail Leader", "Other", "Sales Manager", "Supply Chain Innovation Leader"];
+                                
+                                switch(attrs.marketoFormId){
+                                    case "mktForm_1122":
+                                        //List of Displayed fields with key value pair.
+                                        //Where key = name attribute value & value = label for field
+                                        displayFields = {"Email": "Email Address","FirstName": "First Name","LastName": "Last Name","Company": "Company Name","Phone": "Phone Number","Address_Visit_Country__c": "Country","Title": "Job Title","Address_Visit_State__c": "State / Province","appintIntegration": "Does your organization have an application integration initiative?","Lead_Comments__c": "Please describe your biggest application integration challenge","Centrasite_Q1": "I agree to the licence agreement","temporaryEmailOptIn": "I opt-in to hearing from Software AG **"}
+                                        //List of Hidden fields with key value pair. 
+                                        //Where key = name attribute value & value = value attribute value
+                                        hiddenFields = {
+                                              "_marketo_comments": "",
+                                              "lpId": "2186",
+                                              "subId": "189",
+                                              "munchkinId": "858-DJP-749",
+                                              "kw": "",
+                                              "cr": "",
+                                              "searchstr": "",
+                                              "lpurl": "//info.softwareag.com/webMthodsApplicationIntegrationDownload.html?cr={creative}&kw={keyword}",
+                                              "formid": "1122",
+                                              "returnURL": "https://tech.forums.softwareag.com/pub/webmethods-integration-free-trial-download-thank-you",
+                                              "retURL": "https://tech.forums.softwareag.com/pub/webmethods-integration-free-trial-download-thank-you",
+                                              "returnLPId": "-1",
+                                              "_mkt_disp": "return",
+                                              "_mkt_trk": "id:858-DJP-749&token:_mch-softwareag.com-1603862150472-40080"
+                                        }
+                                        break;
+                                    case "mktForm_5741":
+                                        let state_province = "";
+                                        //Set the State/Province based on selected Country.
+                                        if(currentuserCountry && currentuserCountry.toUpperCase() == 'USA'){
+                                            state_province = currentuserState;
+                                        }else if(currentuserCountry && currentuserCountry.toUpperCase() == 'CANADA'){
+                                            state_province = currentuserProvince;
+                                        }
+                                        
+                                        //List of Displayed fields with key value pair.
+                                        //Where key = name attribute value & value = label for field
+                                        displayFields = {"Email": "Email Address","temporaryEmailOptIn": "I opt-in to hearing from Software AG **","License_Accepted__c": "Yes, I accept the License Agreement and the Export Regulation."}
+                                        //List of Hidden fields with key value pair. 
+                                        //Where key = name attribute value & value = value attribute value
+                                        hiddenFields = {
+                                              "FirstName": currentuserLastName,
+                                              "LastName": currentuserFirstName,
+                                              "Company": currentuserCompany,
+                                              "Address_Visit_Country__c": currentuserCountry,
+                                              "Address_Visit_State__c": state_province,
+                                              "_marketo_comments": "",
+                                              "lpId": "27155",
+                                              "subId": "189",
+                                              "munchkinId": "858-DJP-749",
+                                              "kw": "",
+                                              "cr": "",
+                                              "searchstr": "",
+                                              "lpurl": "//info.softwareag.com/ada_nat_docker.html?cr={creative}&kw={keyword}",
+                                              "formid": "5741",
+                                              "returnURL": "https://tech.forums.softwareag.com/pub/thank-you-for-downloading-adabas-natural-community-edition-for-docker",
+                                              "retURL": "https://tech.forums.softwareag.com/pub/thank-you-for-downloading-adabas-natural-community-edition-for-docker",
+                                              "returnLPId": "-1",
+                                              "_mkt_disp": "return",
+                                              "_mkt_trk": "id:858-DJP-749&token:_mch-softwareag.com-1605783375752-92841"
+                                        }
+                                        
+                                        break;
+                                    case "mktoForm_8655":
+                                        
+                                        //List of Displayed fields with key value pair.
+                                        //Where key = name attribute value & value = label for field
+                                        displayFields = {"FirstName": "First Name","LastName": "Last Name","Email": "Email Address","Company": "Company Name","Address_Visit_Country__c": "Country","temporaryEmailOptIn": "I opt-in to hearing from Software AG *","License_Accepted__c": "Yes, I accept the License Agreement and the Export Regulation."}
+                                        //List of Hidden fields with key value pair. 
+                                        //Where key = name attribute value & value = value attribute value
+                                        hiddenFields = {
+                                              "DUNS_Number__c": "",
+                                              "dnbAddress": "",
+                                              "dnbAnnualRevenueCurrency": "",
+                                              "dnbAnnualRevenue": "",
+                                              "dnbCity": "",
+                                              "dnbEmployeeCount": "",
+                                              "dnbPostalCode": "",
+                                              "dnbSICCode": "",
+                                              "dnbSICDescription": "",
+                                              "campaignMedium": "",
+                                              "campaignName": "",
+                                              "campaignSource": "",
+                                              "Web_Lead_Source__c": "",
+                                              "Global_Ultimate_DUNS_Number__c": "",
+                                              "Domestic_Ultimate_DUNS_Number__c": "",
+                                              "formid": "8655",
+                                              "lpId": "32995",
+                                              "subId": "189",
+                                              "munchkinId": "858-DJP-749",
+                                              "lpurl": "//info.softwareag.com/019-webMethods-Service-Designer_lpp.html?cr={creative}&kw={keyword}",
+                                              "cr": "",
+                                              "kw": "",
+                                              "q": "",
+                                              "returnURL": "https://tech.forums.softwareag.com/pub/thank-you-for-downloading-webmethods-service-designer",
+                                              "retURL": "https://tech.forums.softwareag.com/pub/thank-you-for-downloading-webmethods-service-designer"
+                                        }
+                                        
+                                        break;
+
+                                    default:
+                                }
+                                
+                                
+                                let _hidden_fields = [];
+                                let _hidden_field_wrapper = [];
+                                let ul = [];
+                                let li = [];
+                                // Preparing Visibled fields HTML
+                                for(field in displayFields){
+                                      let currentfield;
+                                      let currenfieldlabel;
+                                      
+                                      //Current Field value
+                                      let selectedValue="";
+                                      
+                                      currenfieldlabel = h('label',{
+                                                      "attributes" : {
+                                                          "for" : field,
+                                                      }},displayFields[field]);
+                                      
+                                      // Generate Select Input for Country, State and App Integration fields
+                                      if (field == 'Address_Visit_State__c' || field == 'Address_Visit_Country__c' || field == 'appintIntegration' || field == 'Salutation' || field == 'Job_Title_Standardized__c' || field == 'Existing_Customer'){
+                                        let options = [];
+                                        let arr = [];
+                                        if(field == 'Address_Visit_Country__c'){
+                                            arr = countrieOptions;
+                                            selectedValue = currentuserCountry;
+                                        }else if(field == 'Address_Visit_State__c'){
+                                            arr = stateOptions;
+                                            if(currentuserCountry && currentuserCountry.toUpperCase() == 'USA'){
+                                                selectedValue = currentuserState;
+                                            }else if(currentuserCountry && currentuserCountry.toUpperCase() == 'CANADA'){
+                                                selectedValue = currentuserProvince;
+                                            }
+                                            
+                                        }else if(field == 'Salutation'){
+                                            arr = salutationOptions;
+                                        }else if(field == 'Job_Title_Standardized__c'){
+                                            arr = jobRoleOptions;
+                                        }
+                                        else{
+                                            arr = yesNoOptions;
+                                        }
+                                         
+                                        arr.forEach(function(option) { 
+                                            //If current Select option value is equal to select value the add seleted attributed to current option
+                                            if(option == selectedValue){
+                                                options.push(h('option',{
+                                                          value: option,
+                                                          selected: true
+                                                      },option));    
+                                            }
+                                            else{
+                                                options.push(h('option',{
+                                                          value: option
+                                                      },option));    
+                                            }
+                                        });
+                                        
+                                        currentfield = h('select.mktFReq',{
+                                                      "attributes" : {
+                                                          "id" : field,
+                                                          "name": field,
+                                                      }},[ options ]);
+                                      }
+                                      //Generate Checkbox for temporaryEmailOptIn/Centrasite_Q1/Budget__c/License_Accepted__c fields
+                                      else if(field == 'temporaryEmailOptIn' || field == 'Centrasite_Q1' || field == 'Budget__c' || field == 'License_Accepted__c'){
+                                        
+                                        //If curent field is "License_Accepted__c" then let it be checked by default.
+                                        if(field == 'License_Accepted__c'){
+                                            currentfield = h('input.mktFReq',{
+                                                      "attributes" : {
+                                                          "type" : "checkbox",
+                                                          "id" : field,
+                                                          "name": field,
+                                                          "value": "1",
+                                                          "checked": true
+                                                      }});
+                                        }else{ 
+                                        currentfield = h('input.mktFReq',{
+                                                      "attributes" : {
+                                                          "type" : "checkbox",
+                                                          "id" : field,
+                                                          "name": field,
+                                                          "value": "1",
+                                                      }});
+                                        }
+                                      }
+                                      else if(field == 'Lead_Comments__c'){
+                                          
+                                            currentfield = h('textarea.mktFReq',{
+                                                      "attributes" : {
+                                                          "cols" : "20",
+                                                          "rows": "4",
+                                                          "id" : field,
+                                                          "name": field,
+                                                          "value": "",
+                                                      }});
+                                      }
+                                      
+                                      //Generate Text input field for other Fields.
+                                      else{
+                                          //Current Field value
+                                          let value="";
+                                          let classes = "mktFReq";
+                                          //Setting values for class and value attribute based on current input field.
+                                          switch(field){
+                                              case "Email":
+                                                 value = currentuserEmail;
+                                                 classes += ".mktFormEmail"; 
+                                                 break;
+                                              case "FirstName":
+                                                 value = currentuserFirstName; 
+                                                 classes += ".mktFormString";
+                                                 break;
+                                              case "LastName":
+                                                  value = currentuserLastName;
+                                                  classes += ".mktFormString";
+                                                 break;
+                                              case "Title":
+                                                 value = currentuserJob;
+                                                 classes += ".mktFormString";
+                                                 break;
+                                              case "Job_Function":
+                                                 value = currentuserJob;
+                                                 classes += ".mktFormString";
+                                                 break;     
+                                              case "Company":
+                                                 value = currentuserCompany; 
+                                                 classes += ".mktFormString";
+                                                 break;     
+                                              case "Phone":
+                                                  value = "";
+                                                 classes += ".mktFormPhone"; 
+                                                 break;
+                                              default:
+                                              value = "";
+                                              classes += ".mktFormString"; 
+                                              
+                                          }
+                                        
+                                            currentfield = h('input.'+classes,{
+                                                      "attributes" : {
+                                                          "type" : "text",
+                                                          "id" : field,
+                                                          "name": field,
+                                                          "value": value,
+                                                          "maxlength": "255"
+                                                      }});
+                                      }
+                                        if(field == 'temporaryEmailOptIn' || field == 'Existing_Customer' || field =='Budget__c'){
+                                            li.push(h('li.mktField',[currenfieldlabel,h('span.mktInput',[currentfield, h('span.mktFormMsg')])]));
+                                        }else{
+                                            li.push(h('li.mktFormReq.mktField',[currenfieldlabel,h('span.mktInput',[currentfield, h('span.mktFormMsg')])]));     
+                                        }
+                                       
+                                }
+                                
+                                //Adding button to list.
+                                if(button){
+                                    li.push(h('li.mktField',[h('label',{
+                                                      "attributes" : {
+                                                          "for" : "",
+                                                      }},""),button]));
+                                }
+                                
+                                
+                                ul.push(h('ul',[li]));
+                                
+                                // Preparing Hidden fields HTML
+                                for(field in hiddenFields){
+                                     _hidden_fields.push(h('input',{
+                                                      "attributes" : {
+                                                          "type" : "hidden",
+                                                          "name": field,
+                                                          "value": hiddenFields[field]
+                                                      }}));
+                                }
+                                
+                                //Generating HTML Form with input fields and button.
+                                result.push(h('form.marketo-form',{"attributes":{
+                                    "method": "post",
+                                    "enctype": "application/x-www-form-urlencoded",
+                                    "action": attrs.marketoFormAction,
+                                    "id": attrs.marketoFormId,
+                                    "name": attrs.marketoFormId
+                                }},[ul, _hidden_fields]));
+                               
+                            }
+                            
+                            },
+                        async: false
+                        
+                    });
+                } 
+                //If User is not Logged in then redirect to Signup page.
+                else{
+                    DiscourseURL.routeToUrl('/signup');
+                }
+        }
+    return result;
+    }
+    
+});
+
+/* Created download_button widget to have custon onclick event for submit button in download form */
+api.createWidget("download_button", {
+  tagName: "button.widget-button.btn",
+  html(attrs) {
+     const contents = [];
+    const left = !attrs.iconRight;
+    if (attrs.icon && left) {
+      contents.push(iconNode(attrs.icon, { class: attrs.iconClass }));
+    }
+    if (attrs.label) {
+      contents.push(
+        h("span.d-button-label", attrs.label)
+      );
+    }
+    if (attrs.contents) {
+      contents.push(attrs.contents);
+    }
+    if (attrs.icon && !left) {
+      contents.push(iconNode(attrs.icon, { class: attrs.iconClass }));
+    }
+
+    return contents;
+  },
+  
+  click(e) {
+    e.preventDefault();
+    const attrs = this.attrs;
+    if (attrs.disabled) {
+      return;
+    }
+    
+    //Submit the Marketo Form.
+    formSubmit(document.getElementById(attrs.marketoFormId));
+    return;
+  }
+  
+});
+    
+</script>
