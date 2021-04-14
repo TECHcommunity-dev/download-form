@@ -264,7 +264,7 @@ api.createWidget("download_form", {
                                 let ul = [];
                                 let li = [];
                                 // Preparing Visibled fields HTML
-                                for(field in displayFields){
+                                for(let field in displayFields){
                                       let currentfield;
                                       let currenfieldlabel;
                                       
@@ -426,7 +426,7 @@ api.createWidget("download_form", {
                                 ul.push(h('ul',[li]));
                                 
                                 // Preparing Hidden fields HTML
-                                for(field in hiddenFields){
+                                for(let field in hiddenFields){
                                      _hidden_fields.push(h('input',{
                                                       "attributes" : {
                                                           "type" : "hidden",
