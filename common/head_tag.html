@@ -1,14 +1,14 @@
 <!-- SYSTEM JAVASCRIPT - DO NOT EDIT -->
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{nonce}}">
     function fieldValidate(field) {
       /* call Mkto.setError(field, message) and return false to mark a field value invalid */
       /* return 'skip' to bypass the built-in validations */
       return true;
     }
     </script>
-    <script type="text/javascript" src="//munchkin.marketo.net/munchkin.js"></script>
-    <script src="//info.softwareag.com/js/forms2/js/forms2.js"></script>
-    <script type="text/javascript">
+    <script type="text/javascript" src="//munchkin.marketo.net/munchkin.js" nonce="{{nonce}}"></script>
+    <script src="//info.softwareag.com/js/forms2/js/forms2.js" nonce="{{nonce}}"></script>
+    <script type="text/javascript" nonce="{{nonce}}">
     var profiling = {
       isEnabled: false,
       numberOfProfilingFields: 3,
@@ -16,8 +16,8 @@
     };
     var mktFormLanguage = 'English'
     </script>
-    <script type="text/javascript" src="//info.softwareag.com/js/mktFormSupport.js"></script>
-    <script type="text/javascript">
+    <script type="text/javascript" src="//info.softwareag.com/js/mktFormSupport.js" nonce="{{nonce}}"></script>
+    <script type="text/javascript" nonce="{{nonce}}">
     const { h } = require('virtual-dom');
     
       function formSubmit(elt) {
