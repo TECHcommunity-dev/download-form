@@ -81,6 +81,9 @@
                     //var currentusername = Discourse.User.currentProp('username'); 
                     var currentuser = api.getCurrentUser(); 
                     var currentusername;
+                    if(currentuser){
+                        currentusername = currentuser.username;
+                    }
                     if (currentusername  && typeof currentusername !== 'undefined'){
                         var fulllinktojson = "/users/" + currentusername + ".json"; 
                         
