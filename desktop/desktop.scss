@@ -66,6 +66,8 @@ form.marketo-form{
     select{
         border: 1px solid var(--primary-medium);
         background-color: var(--secondary);
+        height: 34px;
+        padding: .5em .65em;
     }
     
     textarea{
