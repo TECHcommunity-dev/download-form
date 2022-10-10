@@ -6,18 +6,63 @@ form.marketo-form{
     
     .mktoFieldWrap {
         display: flex;
+        margin-bottom: 9px !important;
         
         label {
             font-weight: bold;
             display: inline-block;
+            width: 280px !important;
         }
         
         .mktoError {
-            color: red;
+            position: static;
             padding-left: 10px;
+            .mktoErrorMsg {
+                margin-top: 0px;
+                max-width: 20em;
+                background: unset;
+                box-shadow: unset;
+                text-shadow: unset;
+                border: unset;
+                color: red;
+                .mktoErrorDetail {
+                    display: inline-block;
+                }
+            }
+            .mktoErrorArrow {
+                display: none !important;
+            }
+        }
+
+        input[type="text"], input[type="email"], input[type="tel"], select {
+            width: 220px !important;
+            line-height: normal !important;
+            box-shadow: unset !important;
+            padding: 0.5em 0.65em !important;
+        }
+        input[type=checkbox] {
+            width: auto !important;
+            height: auto !important;
+            opacity: 1 !important;
+        }
+        input[type=checkbox] + label:before {
+            display: none !important;
+        }
+        select{
+            border: 1px solid var(--primary-medium);
+            background-color: var(--secondary);
+            height: 34px;
+        }
+        .mktoCheckboxList {
+            padding: 0px !important;
+            height: 34px;
+            width: 220px !important;
+        }
+        .mktoLogicalField,.mktoLogicalField.mktoInvalid {
+            border: unset !important;
         }
     }
-    
+
     .mktoFieldWrap.mktoRequiredField {
         .mktoAsterix {
             font-weight: bold;
@@ -63,13 +108,6 @@ form.marketo-form{
     }
     .mktoButtonWrap button:focus {
         outline: none !important;
-    }
-    
-    select{
-        border: 1px solid var(--primary-medium);
-        background-color: var(--secondary);
-        height: 34px;
-        padding: .5em .65em;
     }
     
     textarea{

@@ -1,14 +1,60 @@
 //download-form - mobile.scss
 
 form.marketo-form{
+    padding: 0px !important;
+    strong {
+        padding: 0px !important;
+    }
+    .mktoFormCol .mktoLabel {
+        width: auto !important;
+        margin-bottom: 5px;
+    }
     input[type="text"],input[type="email"],input[type="tel"],textarea,select {
         width: 100%;
         max-width: 250px;
         margin-bottom: 5px;
         background-color: var(--secondary);
         border: 1px solid var(--primary-medium);
+        box-shadow: unset !important;
         min-height: 30px;
         font-size: 1.2em;
+    }
+    input[type=checkbox] {
+        width: auto !important;
+        height: auto !important;
+        opacity: 1 !important;
+    }
+    input[type=checkbox] + label:before {
+        display: none !important;
+    }
+    .mktoCheckboxList {
+        padding: 0px !important;
+        height: 34px;
+        width: 220px !important;
+    }
+    .mktoLogicalField,.mktoLogicalField.mktoInvalid {
+        border: unset !important;
+    }
+
+    .mktoError {
+        position: static;
+        .mktoErrorMsg {
+            clear: both;
+            margin-top: 0px;
+            padding: 0px;
+            max-width: 20em;
+            background: unset;
+            box-shadow: unset;
+            text-shadow: unset;
+            border: unset;
+            color: red;
+            .mktoErrorDetail {
+                display: inline-block;
+            }
+        }
+        .mktoErrorArrow {
+            display: none !important;
+        }
     }
     
     .mktoFieldWrap {
