@@ -7,7 +7,7 @@
     }
     </script>
     <script type="text/javascript" src="https://munchkin.marketo.net/munchkin.js" nonce="{{nonce}}"></script>
-    <script src="https://info.softwareag.com/js/forms2/js/forms2.js" nonce="{{nonce}}"></script>
+    <script src="https://info.softwareag.com/js/forms2/js/forms2.min.js" nonce="{{nonce}}"></script>
     <script type="text/javascript" nonce="{{nonce}}">
     var profiling = {
       isEnabled: false,
@@ -30,8 +30,8 @@
     
     <!-- Created Theme component to add Download form in Discourse [By Webdirekt on 02-11-2020] -->
     <script type="text/discourse-plugin" version="0.8">
-     const { h } = require('virtual-dom');
-     const DiscourseURL = require('discourse/lib/url').default;
+    const { h } = require('virtual-dom');
+    const DiscourseURL = require('discourse/lib/url').default;
     
     /* Below code will render "download_form" widget before rendering "post-menu" widget on Topic page*/
     api.decorateWidget("post-menu:before", helper => {
@@ -70,104 +70,105 @@
     
     /* Created new download_form widget which will display only if current URL contains  "/t/webmethods-free-trial/" */
     api.createWidget("download_form", {
-      tagName: "div.d-form",
-      html(attrs) {
+        tagName: "div.d-form",
+        html(attrs) {
     
-          let userFields = this.site.get("user_fields");
-          let result = [];
+            let userFields = this.site.get("user_fields");
+            let result = [];
             const path = window.location.pathname;
-             if(true) {
-                    //Comment the below code to change the way for getting Username as latest versions of Discourse do not have support for the "Discourse.User.currentPro". [Modified by: Saurabh; Date: 14-10-2021]
-                    //var currentusername = Discourse.User.currentProp('username'); 
-                    var currentuser = api.getCurrentUser(); 
-                    var currentusername;
-                    if(currentuser){
-                        currentusername = currentuser.username;
-                    }
-                    if (currentusername  && typeof currentusername !== 'undefined'){
-                        var fulllinktojson = "/users/" + currentusername + ".json"; 
-                        
-                         $.ajax({
-                            type: 'GET',
-                            url: fulllinktojson,
-                            dataType: 'json',
-                            success: function(json) {
-                                //List if banned countries
-                                let bannedCountries = ["Afghanistan","Algeria","Angola","Armenia","Azerbaijan","Belarus","Birma/Myanmar","Burundi","Cambodia","Central African Republic","China","Congo","Cyprus","Democratic Rep. Of Congo","Egypt","Eritrea","Ethiopia","Georgia","Guinea","Guinea-Bissau","Haiti","Iraq","Israel","Jordan","Kazakhstan","Kyrgyzstan","Laos","Lebanon","Libya","Macau","Mali","Moldova","Mongolia","Mozambique","Myanmar","Nigeria","Pakistan","Russia","Russian federation","Somalia","South Sudan","Sri Lanka","Tajikistan","Tanzania","Tunisia","Turkmenistan","Uganda","Ukraine","Uzbekistan","Venezuela","Vietnam","Yemen","Zimbabwe"];
-                                
-                                let isBelongsToBannedCountry = false;
-                                let isBelongsToDownloadsGroup = false;
-                                
-                                //Getting user-fields id to fetch user-fields of the current data
-                                let countryFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Country").toLowerCase());
-                                let stateFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("State").toLowerCase());
-                                let provinceFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Province").toLowerCase());
-                                let firstnameFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("First name").toLowerCase());
-                                let lastnameFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Last name").toLowerCase());
-                                let companyFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Company").toLowerCase());
-                                let jobTitleFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Job Title").toLowerCase());
-    
-                                
-                                /*
-                                ** Getting Current Login User Deatils.
-                                */
-                                //Email
-                                var currentuserEmail = String(json.user.email);
-                                //First Name
-                                var currentuserFirstName = "";
-                                if(firstnameFieldObj){ currentuserFirstName = checkNull(String(json.user.user_fields[firstnameFieldObj.id])); }
-                                //Last Name
-                                var currentuserLastName = ""
-                                if(lastnameFieldObj){ currentuserLastName = checkNull(String(json.user.user_fields[lastnameFieldObj.id])); }
-                                //Job Title
-                                var currentuserJob = "";
-                                if(jobTitleFieldObj){ currentuserJob = checkNull(String(json.user.user_fields[jobTitleFieldObj.id])); }
-                                //Country
-                                var currentuserCountry = "";
-                                if(countryFieldObj){ currentuserCountry = checkNull(String(json.user.user_fields[countryFieldObj.id])); }
-                                //Company
-                                var currentuserCompany = "";
-                                if(companyFieldObj){ currentuserCompany = checkNull(String(json.user.user_fields[companyFieldObj.id])); }
-                                // State
-                                var currentuserState = "";
-                                if(stateFieldObj){ currentuserState = checkNull(String(json.user.user_fields[stateFieldObj.id])); }
-                                // Province
-                                var currentuserProvince = "";
-                                if(provinceFieldObj){ currentuserProvince = checkNull(String(json.user.user_fields[provinceFieldObj.id])); }
-                                
-                                //Groups
-                                var currentuserGroups = [];
-                                (json.user.groups).forEach(function (groupObj, index) {
-                                    currentuserGroups.push(String(groupObj.name).toLowerCase());
-                                });
-                                
-                                //check whether user belongs to banned country
-                                var lowerCaseBannedCountries = bannedCountries.map(function(value) {
-                                  return value.toLowerCase();
-                                });
-                                if(lowerCaseBannedCountries.indexOf(currentuserCountry.toLowerCase()) !== -1){
-                                    isBelongsToBannedCountry = true;    
-                                }
-                                
-                                //check whether user belongs to Downloads group
-                                if(currentuserGroups.indexOf(("Downloads").toLowerCase()) !== -1){
-                                    isBelongsToDownloadsGroup = true;    
-                                }
-                                
-                                //If user belongs to Banned Country and not present in Downlads group
-                                if(isBelongsToBannedCountry && !isBelongsToDownloadsGroup){
-                                    DiscourseURL.routeToUrl('/g/Downloads');
-                                }
-                                // Else Display Download Form.
-                                else{
-                                    
-                                    //Generating HTML Form with input fields and button.
-                                    result.push(h('form.marketo-form.mktoForm.mktoHasWidth.mktoLayoutLeft',{"attributes":{
-                                        "method": "post",
-                                        "enctype": "application/x-www-form-urlencoded",
-                                        "id": attrs.marketoFormId,
-                                        "name": attrs.marketoFormId
-                                    }}));
+            if(true) {
+                //Comment the below code to change the way for getting Username as latest versions of Discourse do not have support for the "Discourse.User.currentPro". [Modified by: Saurabh; Date: 14-10-2021]
+                //var currentusername = Discourse.User.currentProp('username'); 
+                var currentuser = api.getCurrentUser(); 
+                var currentusername;
+                if(currentuser){
+                    currentusername = currentuser.username;
+                }
+                if (currentusername  && typeof currentusername !== 'undefined'){
+                    var fulllinktojson = "/users/" + currentusername + ".json"; 
+                    
+                    $.ajax({
+                        type: 'GET',
+                        url: fulllinktojson,
+                        dataType: 'json',
+                        success: function(json) {
+                            //List if banned countries
+                            let bannedCountries = ["Afghanistan","Algeria","Angola","Armenia","Azerbaijan","Belarus","Birma/Myanmar","Burundi","Cambodia","Central African Republic","China","Congo","Cyprus","Democratic Rep. Of Congo","Egypt","Eritrea","Ethiopia","Georgia","Guinea","Guinea-Bissau","Haiti","Iraq","Israel","Jordan","Kazakhstan","Kyrgyzstan","Laos","Lebanon","Libya","Macau","Mali","Moldova","Mongolia","Mozambique","Myanmar","Nigeria","Pakistan","Russia","Russian federation","Somalia","South Sudan","Sri Lanka","Tajikistan","Tanzania","Tunisia","Turkmenistan","Uganda","Ukraine","Uzbekistan","Venezuela","Vietnam","Yemen","Zimbabwe"];
+                            
+                            let isBelongsToBannedCountry = false;
+                            let isBelongsToDownloadsGroup = false;
+                            
+                            //Getting user-fields id to fetch user-fields of the current data
+                            let countryFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Country").toLowerCase());
+                            let stateFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("State").toLowerCase());
+                            let provinceFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Province").toLowerCase());
+                            let firstnameFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("First name").toLowerCase());
+                            let lastnameFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Last name").toLowerCase());
+                            let companyFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Company").toLowerCase());
+                            let jobTitleFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Job Title").toLowerCase());
+
+                            
+                            /*
+                            ** Getting Current Login User Deatils.
+                            */
+                            //Email
+                            var currentuserEmail = String(json.user.email);
+                            //First Name
+                            var currentuserFirstName = "";
+                            if(firstnameFieldObj){ currentuserFirstName = checkNull(String(json.user.user_fields[firstnameFieldObj.id])); }
+                            //Last Name
+                            var currentuserLastName = ""
+                            if(lastnameFieldObj){ currentuserLastName = checkNull(String(json.user.user_fields[lastnameFieldObj.id])); }
+                            //Job Title
+                            var currentuserJob = "";
+                            if(jobTitleFieldObj){ currentuserJob = checkNull(String(json.user.user_fields[jobTitleFieldObj.id])); }
+                            //Country
+                            var currentuserCountry = "";
+                            if(countryFieldObj){ currentuserCountry = checkNull(String(json.user.user_fields[countryFieldObj.id])); }
+                            //Company
+                            var currentuserCompany = "";
+                            if(companyFieldObj){ currentuserCompany = checkNull(String(json.user.user_fields[companyFieldObj.id])); }
+                            // State
+                            var currentuserState = "";
+                            if(stateFieldObj){ currentuserState = checkNull(String(json.user.user_fields[stateFieldObj.id])); }
+                            // Province
+                            var currentuserProvince = "";
+                            if(provinceFieldObj){ currentuserProvince = checkNull(String(json.user.user_fields[provinceFieldObj.id])); }
+                            
+                            //Groups
+                            var currentuserGroups = [];
+                            (json.user.groups).forEach(function (groupObj, index) {
+                                currentuserGroups.push(String(groupObj.name).toLowerCase());
+                            });
+                            
+                            //check whether user belongs to banned country
+                            var lowerCaseBannedCountries = bannedCountries.map(function(value) {
+                            return value.toLowerCase();
+                            });
+                            if(lowerCaseBannedCountries.indexOf(currentuserCountry.toLowerCase()) !== -1){
+                                isBelongsToBannedCountry = true;    
+                            }
+                            
+                            //check whether user belongs to Downloads group
+                            if(currentuserGroups.indexOf(("Downloads").toLowerCase()) !== -1){
+                                isBelongsToDownloadsGroup = true;    
+                            }
+                            
+                            //If user belongs to Banned Country and not present in Downlads group
+                            if(isBelongsToBannedCountry && !isBelongsToDownloadsGroup){
+                                DiscourseURL.routeToUrl('/g/Downloads');
+                            }
+                            // Else Display Download Form.
+                            else{
+                                //Generating HTML Form with input fields and button.
+                                result.push(h('form.marketo-form.mktoForm.mktoHasWidth.mktoLayoutLeft',{"attributes":{
+                                    "method": "post",
+                                    "enctype": "application/x-www-form-urlencoded",
+                                    "id": attrs.marketoFormId,
+                                    "name": attrs.marketoFormId
+                                }}));
+
+                                try {
                                     
                                     //List of Displayed fields with key value pair.
                                     let displayFields = {};
@@ -201,7 +202,39 @@
                                     }else if(currentuserCountry && currentuserCountry.toUpperCase() == 'CANADA'){
                                         state_province = currentuserProvince;
                                     }
-    
+                                    
+                                    let autofillDownloadFormFields = function() {
+                                        let firstNameInput = document.querySelector('input#FirstName')
+                                        if(firstNameInput) {
+                                            firstNameInput.value = currentuserFirstName;
+                                        }
+                                        let lastNameInput = document.querySelector('input#LastName');
+                                        if(lastNameInput) {
+                                            lastNameInput.value = currentuserLastName
+                                        }
+                                        let emailInput = document.querySelector('input#Email');
+                                        if(emailInput) {
+                                            emailInput.value = currentuserEmail;
+                                        }
+                                        let countryInput = document.querySelector('select#Address_Visit_Country__c');
+                                        if(countryInput) {
+                                            countryInput.value = currentuserCountry;
+                                            countryInput.dispatchEvent(new Event('change'));
+                                        }
+                                        let StateProvinceInput = document.querySelector('select#Address_Visit_State__c');
+                                        if(StateProvinceInput){
+                                            StateProvinceInput.value = state_province;
+                                        }
+                                        let companyInput = document.querySelector('input#Company');
+                                        if(companyInput) {
+                                            companyInput.value = currentuserCompany;
+                                        }
+                                        let jobTitleInput = document.querySelector('input#Title');
+                                        if(jobTitleInput) {
+                                            jobTitleInput.value = currentuserJob;
+                                        }
+                                    }
+
                                     switch(attrs.marketoFormId){
                                         case "mktoForm_12281":
                                             if(!document.querySelector('form#mktoForm_12281')){
@@ -210,40 +243,8 @@
                                                 * Below Script loads the "webMethods Integration download form" from the Marketo. This script is copied from the Marketo page: "https://info.softwareag.com/webMthodsApplicationIntegrationDownload.html"
                                                 */
                                                 (function (){
-                                                    var formDescriptor = {"Id":12281,"Vid":12281,"Status":"approved","Name":"001 - TECHcommunity - webMethods Integration.webMethods Integration form","Description":"","Layout":"left","GutterWidth":10,"OffsetWidth":10,"HasTwoButtons":true,"SubmitLabel":"Submit","ResetLabel":"Clear","ButtonLocation":"177","LabelWidth":100,"FieldWidth":150,"ToolTipType":"none","FontFamily":"Arial, Verdana, sans-serif","FontSize":"13px","FontColor":"#333","FontUrl":null,"LineMargin":10,"ProcessorVersion":2,"CreatedByUserid":1881,"ProcessOptions":{"language":"English","locale":"en_US","profiling":{"isEnabled":false,"numberOfProfilingFields":3,"alwaysShowFields":[]},"socialSignOn":{"isEnabled":false,"enabledNetworks":[],"cfId":null,"codeSnippet":null}},"EnableDeferredMode":0,"ButtonType":null,"ButtonImageUrl":null,"ButtonText":null,"ButtonSubmissionText":"Please Wait","ButtonStyle":{"id":15,"className":"mktoInset","css":".mktoForm .mktoButtonWrap.mktoInset .mktoButton {\ncolor:#000;\nbackground:#fff;\nborder:1px solid #aeb0b6;\npadding:0.4em 1em;\nfont-size:1em;\nbox-shadow: 1px 1px 6px 1px #ccc;\nbackground-color:#f5f5f5;\nbackground-image: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#dfdfdf));\nbackground-image: -webkit-linear-gradient(top, #f5f5f5, #dfdfdf);\nbackground-image: -moz-linear-gradient(top, #f5f5f5, #dfdfdf);\nbackground-image: linear-gradient(to bottom, #f5f5f5, #dfdfdf);\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:hover {\nborder:1px solid #999;\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:focus {\noutline:none;\nborder:1px solid #999;\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:active{\nbox-shadow:inset 1px 1px 6px 1px #ccc;\nbackground-color:#dfdfdf;\nbackground-image: -webkit-gradient(linear, left top, left bottom, from(#dfdfdf), to(#f5f5f5));\nbackground-image: -webkit-linear-gradient(top, #dfdfdf, #f5f5f5);\nbackground-image: -moz-linear-gradient(top, #dfdfdf, #f5f5f5);\nbackground-image: linear-gradient(to bottom, #dfdfdf, #f5f5f5);\n}\n","buttonColor":null},"ThemeStyle":{"id":4,"displayOrder":2,"name":"Inset","backgroundColor":"#FFF","layout":"left","fontFamily":"Helvetica, Arial, sans-serif","fontSize":"13px","fontColor":"#333","offsetWidth":10,"gutterWidth":10,"labelWidth":100,"fieldWidth":150,"lineMargin":10,"useBackgroundColorOnPreview":false,"buttonStyleId":15},"ThemeStyleOverride":null,"rows":[
-                                                        [{"Id":216576,"Name":"FirstName","IsRequired":true,"Datatype":"string","InputLabel":"First Name:","InputInitialValue":currentuserFirstName,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":216577,"Name":"LastName","IsRequired":true,"Datatype":"string","InputLabel":"Last Name:","InputInitialValue":currentuserLastName,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":216575,"Name":"Email","IsRequired":true,"Datatype":"email","Maxlength":255,"InputLabel":"Email Address: ","InputInitialValue":currentuserEmail,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"Must be valid email. \u003Cspan class='mktoErrorDetail'\u003Eexample@yourdomain.com\u003C\/span\u003E"}],
-                                                        [{"Id":216578,"Name":"Address_Visit_Country__c","IsRequired":true,"Datatype":"picklist","Maxlength":255,"PicklistValues":countryPicklistValues,"DefaultValue":[currentuserCountry],"InputLabel":"Country:","InputInitialValue":"","InputSourceChannel":"constant","VisibleRows":4,"FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":216579,"Name":"Address_Visit_State__c","IsRequired":true,"Datatype":"picklist","Maxlength":255,"PicklistValues":state_provincePicklistValues,"DefaultValue":[state_province],"InputLabel":"State \/ Province:","InputInitialValue":"","InputSourceChannel":"constant","VisibleRows":4,"FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required.","VisibilityRule":{"defaultVisibility":"hide",
-                                                        "rules":[
-                                                            {"subjectField":"Address_Visit_Country__c","operator":"equal","values":["USA"],"altLabel":"State:","picklistFilterValues":statePicklistValues},
-                                                            {"subjectField":"Address_Visit_Country__c","operator":"equal","values":["Canada"],"altLabel":"Province:","picklistFilterValues":provincePicklistValues}]}}],
-                                                        [{"Id":216598,"Name":"Company","IsRequired":true,"Datatype":"string","Maxlength":255,"InputLabel":"Company Name:","InputInitialValue":currentuserCompany,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":216599,"Name":"Phone","IsRequired":true,"Datatype":"phone","Maxlength":255,"InputLabel":"Phone Number:","InputInitialValue":"","InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"Must be a phone number. \u003Cspan class='mktoErrorDetail'\u003E503-555-1212\u003C\/span\u003E"}],
-                                                        [{"Id":216600,"Name":"Title","IsRequired":true,"Datatype":"string","Maxlength":255,"InputLabel":"Job Title:","InputInitialValue":currentuserJob,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":216597,"Name":"License_Accepted__c","IsRequired":true,"Datatype":"single_checkbox","PicklistValues":[{"label":"","value":"yes"}],"DefaultValue":"no","InputLabel":"\u003Cstrong\u003EI agree to the licence agreement.\u003C\/strong\u003E","InputInitialValue":"","InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":216581,"Name":"temporaryEmailOptIn","Datatype":"single_checkbox","PicklistValues":[{"label":"","value":"yes"}],"InputLabel":"\u003Cstrong\u003EI opt-in to hearing from Software AG *\u003C\/strong\u003E","InputInitialValue":"","InputSourceChannel":"constant","LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required.","VisibilityRule":{"defaultVisibility":"show","rules":[{"subjectField":"Address_Visit_Country__c","operator":"equal","values":["USA"],"altLabel":"\u003Cstrong\u003EI opt-in to hearing from Software AG *\u003C\/strong\u003E"}]}}],[{"Id":216582,"Name":"DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216583,"Name":"dnbAddress","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Address:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216584,"Name":"dnbAnnualRevenueCurrency","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Annual Revenue Currency:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216585,"Name":"dnbAnnualRevenue","Datatype":"hidden","InputLabel":"D&B Annual Revenue:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216586,"Name":"dnbCity","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B City:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216587,"Name":"dnbEmployeeCount","Datatype":"hidden","InputLabel":"D&B Employee Count:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216588,"Name":"dnbPostalCode","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Postal Code:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216589,"Name":"dnbSICCode","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B SIC Code:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216590,"Name":"dnbSICDescription","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B SIC Description:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216591,"Name":"campaignMedium","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Medium:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_medium","ProfilingFieldNumber":0}],[{"Id":216592,"Name":"campaignName","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Name:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_campaign","ProfilingFieldNumber":0}],[{"Id":216593,"Name":"campaignSource","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Source:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_source","ProfilingFieldNumber":0}],[{"Id":216594,"Name":"Web_Lead_Source__c","Datatype":"hidden","Maxlength":255,"InputLabel":"Web Lead Source:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"source","ProfilingFieldNumber":0,"DisablePrefill":true}],[{"Id":216601,"Name":"campaignRegion","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Region:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_region","ProfilingFieldNumber":0}],[{"Id":216602,"Name":"assetDownload","Datatype":"hidden","Maxlength":255,"InputLabel":"Asset Download:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216595,"Name":"Global_Ultimate_DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"Global Ultimate DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216596,"Name":"Domestic_Ultimate_DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"Domestic Ultimate DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],
-                                                        [{"Id":216580,"Name":"Profiling","Datatype":"profiling","InputInitialValue":"","ProfilingFieldNumber":0,"IsLabelToLeft":true}]],"fieldsetRows":[],"action":"https:\/\/info.softwareag.com\/index.php\/leadCapture\/save","munchkinId":"858-DJP-749","invalidInputMsg":"Invalid Input","formSubmitFailedMsg":"Submission failed, please try again later.","isPreview":null};
-                                                      MktoForms2.setOptions({baseUrl:"/js/forms2/"});
-                                                      var isDev = false;
-                                                      if(isDev && window.console && window.JSON){
-                                                        console.log(JSON.stringify(formDescriptor, null, "  "));
-                                                      }
-                                                      formDescriptor.lpId = 41040;
-                                                      var form = MktoForms2.processForm(formDescriptor, function (form){
-                                                        var lpFields = {"lpId":41040,"subId":189,"munchkinId":"858-DJP-749","lpurl":"\/\/info.softwareag.com\/webMthodsApplicationIntegrationDownloadNew.html?cr={creative}&kw={keyword}"};
-                                                        var pageFields = MktoForms2.getPageFields();
-                                                        form.addHiddenFields(lpFields);
-                                                        form.addHiddenFields(pageFields);
-                                                        if(window.mktoPreFillFields){
-                                                          form.setValuesCoerced(mktoPreFillFields);
-                                                        }
-                                                        if(!form.EnableDeferredMode){
-                                                          form.render();
-                                                        }
-                                                      });  
-                                                  })();
+                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);  
+                                                })();
                                             }
     
                                             break;
@@ -256,39 +257,8 @@
                                                 * Below Script loads the "Adabas & Natural download form" from the Marketo. This script is copied from the Marketo page: "https://info.softwareag.com/ada_nat_docker.html"
                                                 */
                                                 (function (){
-                                                    var formDescriptor = {"Id":12282,"Vid":12282,"Status":"approved","Name":"003 - TECHcommunity - Adabas & Natural Community Edition for Docker.Adabas & Natural form","Description":"","Layout":"left","GutterWidth":10,"OffsetWidth":10,"HasTwoButtons":true,"SubmitLabel":"Submit","ResetLabel":"Clear","ButtonLocation":"177","LabelWidth":100,"FieldWidth":150,"ToolTipType":"none","FontFamily":"Arial, Verdana, sans-serif","FontSize":"13px","FontColor":"#333","FontUrl":null,"LineMargin":10,"ProcessorVersion":2,"CreatedByUserid":1881,"ProcessOptions":{"language":"English","locale":"en_US","profiling":{"isEnabled":false,"numberOfProfilingFields":3,"alwaysShowFields":[]},"socialSignOn":{"isEnabled":false,"enabledNetworks":[],"cfId":null,"codeSnippet":null}},"EnableDeferredMode":0,"ButtonType":null,"ButtonImageUrl":null,"ButtonText":null,"ButtonSubmissionText":"Please Wait","ButtonStyle":{"id":15,"className":"mktoInset","css":".mktoForm .mktoButtonWrap.mktoInset .mktoButton {\ncolor:#000;\nbackground:#fff;\nborder:1px solid #aeb0b6;\npadding:0.4em 1em;\nfont-size:1em;\nbox-shadow: 1px 1px 6px 1px #ccc;\nbackground-color:#f5f5f5;\nbackground-image: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#dfdfdf));\nbackground-image: -webkit-linear-gradient(top, #f5f5f5, #dfdfdf);\nbackground-image: -moz-linear-gradient(top, #f5f5f5, #dfdfdf);\nbackground-image: linear-gradient(to bottom, #f5f5f5, #dfdfdf);\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:hover {\nborder:1px solid #999;\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:focus {\noutline:none;\nborder:1px solid #999;\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:active{\nbox-shadow:inset 1px 1px 6px 1px #ccc;\nbackground-color:#dfdfdf;\nbackground-image: -webkit-gradient(linear, left top, left bottom, from(#dfdfdf), to(#f5f5f5));\nbackground-image: -webkit-linear-gradient(top, #dfdfdf, #f5f5f5);\nbackground-image: -moz-linear-gradient(top, #dfdfdf, #f5f5f5);\nbackground-image: linear-gradient(to bottom, #dfdfdf, #f5f5f5);\n}\n","buttonColor":null},"ThemeStyle":{"id":4,"displayOrder":2,"name":"Inset","backgroundColor":"#FFF","layout":"left","fontFamily":"Helvetica, Arial, sans-serif","fontSize":"13px","fontColor":"#333","offsetWidth":10,"gutterWidth":10,"labelWidth":100,"fieldWidth":150,"lineMargin":10,"useBackgroundColorOnPreview":false,"css":"","buttonStyleId":15},"ThemeStyleOverride":null,"rows":[
-                                                        [{"Id":216517,"Name":"FirstName","Datatype":"string","InputLabel":"First Name:","InputInitialValue":currentuserFirstName,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":216518,"Name":"LastName","Datatype":"string","InputLabel":"Last Name:","InputInitialValue":currentuserLastName,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":216516,"Name":"Email","IsRequired":true,"Datatype":"email","Maxlength":255,"InputLabel":"Email Address: ","InputInitialValue":currentuserEmail,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"Must be valid email. \u003Cspan class='mktoErrorDetail'\u003Eexample@yourdomain.com\u003C\/span\u003E"}],
-                                                        [{"Id":216519,"Name":"Address_Visit_Country__c","Datatype":"picklist","Maxlength":255,"PicklistValues":countryPicklistValues,"DefaultValue":[currentuserCountry],"InputLabel":"Country:","InputInitialValue":"","InputSourceChannel":"constant","VisibleRows":4,"FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":216520,"Name":"Address_Visit_State__c","Datatype":"picklist","Maxlength":255,"PicklistValues":state_provincePicklistValues,"DefaultValue":[state_province],"InputLabel":"State \/ Province:","InputInitialValue":"","InputSourceChannel":"constant","VisibleRows":4,"FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required.","VisibilityRule":{"defaultVisibility":"hide",
-                                                        "rules":[
-                                                            {"subjectField":"Address_Visit_Country__c","operator":"equal","values":["USA"],"altLabel":"State:","picklistFilterValues":statePicklistValues},
-                                                            {"subjectField":"Address_Visit_Country__c","operator":"equal","values":["Canada"],"altLabel":"Province:","picklistFilterValues":provincePicklistValues}]
-                                                        }
-                                                    }
-                                                    ],
-                                                    [{"Id":216539,"Name":"Company","Datatype":"string","Maxlength":255,"InputLabel":"Company Name:","InputInitialValue":currentuserCompany,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],[{"Id":216538,"Name":"License_Accepted__c","IsRequired":true,"Datatype":"single_checkbox","PicklistValues":[{"label":"","value":"yes"}],"DefaultValue":"yes","InputLabel":"\u003Cstrong\u003EYes, I accept the License Agreement and the Export Regulation.\u003C\/strong\u003E","InputInitialValue":"","InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],[{"Id":216522,"Name":"temporaryEmailOptIn","Datatype":"single_checkbox","PicklistValues":[{"label":"","value":"yes"}],"DefaultValue":"no","InputLabel":"\u003Cstrong\u003EI opt-in to hearing from Software AG *\u003C\/strong\u003E","InputInitialValue":"","InputSourceChannel":"constant","LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required.","VisibilityRule":{"defaultVisibility":"show","rules":[{"subjectField":"Address_Visit_Country__c","operator":"equal","values":["USA"],"altLabel":"\u003Cstrong\u003EI opt-in to hearing from Software AG *\u003C\/strong\u003E"}]}}],[{"Id":216523,"Name":"DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216524,"Name":"dnbAddress","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Address:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216525,"Name":"dnbAnnualRevenueCurrency","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Annual Revenue Currency:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216526,"Name":"dnbAnnualRevenue","Datatype":"hidden","InputLabel":"D&B Annual Revenue:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216527,"Name":"dnbCity","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B City:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216528,"Name":"dnbEmployeeCount","Datatype":"hidden","InputLabel":"D&B Employee Count:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216529,"Name":"dnbPostalCode","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Postal Code:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216530,"Name":"dnbSICCode","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B SIC Code:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216531,"Name":"dnbSICDescription","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B SIC Description:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216532,"Name":"campaignMedium","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Medium:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_medium","ProfilingFieldNumber":0}],[{"Id":216533,"Name":"campaignName","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Name:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_campaign","ProfilingFieldNumber":0}],[{"Id":216534,"Name":"campaignSource","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Source:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_source","ProfilingFieldNumber":0}],[{"Id":216535,"Name":"Web_Lead_Source__c","Datatype":"hidden","Maxlength":255,"InputLabel":"Web Lead Source:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"source","ProfilingFieldNumber":0,"DisablePrefill":true}],[{"Id":216542,"Name":"campaignRegion","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Region:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_region","ProfilingFieldNumber":0}],[{"Id":216543,"Name":"assetDownload","Datatype":"hidden","Maxlength":255,"InputLabel":"Asset Download:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216536,"Name":"Global_Ultimate_DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"Global Ultimate DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":216537,"Name":"Domestic_Ultimate_DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"Domestic Ultimate DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],
-                                                    [{"Id":216521,"Name":"Profiling","Datatype":"profiling","InputInitialValue":"","ProfilingFieldNumber":0,"IsLabelToLeft":true}]],"fieldsetRows":[],"action":"https:\/\/info.softwareag.com\/index.php\/leadCapture\/save","munchkinId":"858-DJP-749","invalidInputMsg":"Invalid Input","formSubmitFailedMsg":"Submission failed, please try again later.","isPreview":null};
-                                                    MktoForms2.setOptions({baseUrl:"/js/forms2/"});
-                                                    var isDev = false;
-                                                    if(isDev && window.console && window.JSON){
-                                                      console.log(JSON.stringify(formDescriptor, null, "  "));
-                                                    }
-                                                    formDescriptor.lpId = 41044;
-                                                    var form = MktoForms2.processForm(formDescriptor, function (form){
-                                                      var lpFields = {"lpId":41044,"subId":189,"munchkinId":"858-DJP-749","lpurl":"\/\/info.softwareag.com\/ada_nat_docker_new.html?cr={creative}&kw={keyword}"};
-                                                      var pageFields = MktoForms2.getPageFields();
-                                                      form.addHiddenFields(lpFields);
-                                                      form.addHiddenFields(pageFields);
-                                                      if(window.mktoPreFillFields){
-                                                        form.setValuesCoerced(mktoPreFillFields);
-                                                      }
-                                                      if(!form.EnableDeferredMode){
-                                                        form.render();
-                                                      }
-                                                    });   
-                                                  })();
+                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12282, autofillDownloadFormFields);   
+                                                })();
                                             }
                                             
                                             break;
@@ -304,42 +274,8 @@
                                                 */ 
                                                 
                                                 (function (){
-                                                    var formDescriptor = {"Id":8655,"Vid":8655,"Status":"approved","Name":"002 - TECHcommunity - webMethods Service Designer.VIP_Digital Campaign webMethods Service Designer Free Trial_Global","Description":"https:\/\/tech.forums.softwareag.com\/t\/webmethods-service-designer-download-form\/235242","Layout":"left","GutterWidth":10,"OffsetWidth":10,"HasTwoButtons":true,"SubmitLabel":"Submit","ResetLabel":"Clear","ButtonLocation":"177","LabelWidth":100,"FieldWidth":150,"ToolTipType":"none","FontFamily":"Arial, Verdana, sans-serif","FontSize":"13px","FontColor":"#333","FontUrl":null,"LineMargin":10,"ProcessorVersion":2,"CreatedByUserid":1881,"ProcessOptions":{"language":"English","locale":"en_US","profiling":{"isEnabled":false,"numberOfProfilingFields":3,"alwaysShowFields":[]},"socialSignOn":{"isEnabled":false,"enabledNetworks":[],"cfId":null,"codeSnippet":null}},"EnableDeferredMode":0,"ButtonType":null,"ButtonImageUrl":null,"ButtonText":null,"ButtonSubmissionText":"Please Wait","ButtonStyle":{"id":15,"className":"mktoInset","css":".mktoForm .mktoButtonWrap.mktoInset .mktoButton {\ncolor:#000;\nbackground:#fff;\nborder:1px solid #aeb0b6;\npadding:0.4em 1em;\nfont-size:1em;\nbox-shadow: 1px 1px 6px 1px #ccc;\nbackground-color:#f5f5f5;\nbackground-image: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#dfdfdf));\nbackground-image: -webkit-linear-gradient(top, #f5f5f5, #dfdfdf);\nbackground-image: -moz-linear-gradient(top, #f5f5f5, #dfdfdf);\nbackground-image: linear-gradient(to bottom, #f5f5f5, #dfdfdf);\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:hover {\nborder:1px solid #999;\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:focus {\noutline:none;\nborder:1px solid #999;\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:active{\nbox-shadow:inset 1px 1px 6px 1px #ccc;\nbackground-color:#dfdfdf;\nbackground-image: -webkit-gradient(linear, left top, left bottom, from(#dfdfdf), to(#f5f5f5));\nbackground-image: -webkit-linear-gradient(top, #dfdfdf, #f5f5f5);\nbackground-image: -moz-linear-gradient(top, #dfdfdf, #f5f5f5);\nbackground-image: linear-gradient(to bottom, #dfdfdf, #f5f5f5);\n}\n","buttonColor":null},"ThemeStyle":{"id":4,"displayOrder":2,"name":"Inset","backgroundColor":"#FFF","layout":"left","fontFamily":"Helvetica, Arial, sans-serif","fontSize":"13px","fontColor":"#333","offsetWidth":10,"gutterWidth":10,"labelWidth":100,"fieldWidth":150,"lineMargin":10,"useBackgroundColorOnPreview":false,"css":"","href":"css\/forms2-theme-inset.css","buttonStyleId":15},"ThemeStyleOverride":null,"rows":[
-                                                    [{"Id":184563,"Name":"FirstName","IsRequired":true,"Datatype":"string","InputLabel":"First Name:","InputInitialValue":currentuserFirstName,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"This field is required."}],
-                                                    [{"Id":184564,"Name":"LastName","IsRequired":true,"Datatype":"string","InputLabel":"Last Name:","InputInitialValue":currentuserLastName,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"This field is required."}],
-                                                    [{"Id":184562,"Name":"Email","IsRequired":true,"Datatype":"email","Maxlength":255,"InputLabel":"Email Address: ","InputInitialValue":currentuserEmail,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"Must be valid email. \u003Cspan class='mktoErrorDetail'\u003Eexample@yourdomain.com\u003C\/span\u003E"}],
-                                                    [{"Id":184565,"Name":"Company","IsRequired":true,"Datatype":"string","InputLabel":"Company Name:","InputInitialValue":currentuserCompany,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                    [{"Id":184566,"Name":"Address_Visit_Country__c","IsRequired":true,"Datatype":"picklist","Maxlength":255,"PicklistValues":countryPicklistValues,"DefaultValue":[currentuserCountry],
-                                                        "InputLabel":"Country:","InputInitialValue":"","InputSourceChannel":"constant","VisibleRows":4,"FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                    [{"Id":184567,"Name":"Address_Visit_State__c","IsRequired":true,"Datatype":"picklist","Maxlength":255,"PicklistValues":state_provincePicklistValues,"DefaultValue":[state_province],"InputLabel":"State \/ Province:","InputInitialValue":"","InputSourceChannel":"constant","VisibleRows":4,"FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required.",
-                                                        "VisibilityRule":{"defaultVisibility":"hide",
-                                                        "rules":[
-                                                                {"subjectField":"Address_Visit_Country__c","operator":"equal","values":["USA"],"altLabel":"State:","picklistFilterValues":statePicklistValues},
-                                                                {"subjectField":"Address_Visit_Country__c","operator":"equal","values":["Canada"],"altLabel":"Province:","picklistFilterValues":provincePicklistValues}
-                                                            ]}
-                                                        }
-                                                    ],
-                                                    [{"Id":184569,"Name":"temporaryEmailOptIn","Datatype":"single_checkbox","PicklistValues":[{"label":"","value":"yes"}],"InputLabel":"\u003Cstrong\u003EI opt-in to hearing from Software AG *\u003C\/strong\u003E","InputInitialValue":"","InputSourceChannel":"constant","LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required.","VisibilityRule":{"defaultVisibility":"show","rules":[{"subjectField":"Address_Visit_Country__c","operator":"equal","values":["USA"],"altLabel":"\u003Cstrong\u003EI opt-in to hearing from Software AG *\u003C\/strong\u003E"}]}}],[{"Id":184570,"Name":"DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184571,"Name":"dnbAddress","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Address:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184572,"Name":"dnbAnnualRevenueCurrency","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Annual Revenue Currency:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184573,"Name":"dnbAnnualRevenue","Datatype":"hidden","InputLabel":"D&B Annual Revenue:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184574,"Name":"dnbCity","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B City:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184575,"Name":"dnbEmployeeCount","Datatype":"hidden","InputLabel":"D&B Employee Count:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184576,"Name":"dnbPostalCode","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Postal Code:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184577,"Name":"dnbSICCode","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B SIC Code:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184578,"Name":"dnbSICDescription","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B SIC Description:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184579,"Name":"campaignMedium","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Medium:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_medium","ProfilingFieldNumber":0}],[{"Id":184580,"Name":"campaignName","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Name:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_campaign","ProfilingFieldNumber":0}],[{"Id":184581,"Name":"campaignSource","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Source:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_source","ProfilingFieldNumber":0}],[{"Id":184582,"Name":"Web_Lead_Source__c","Datatype":"hidden","Maxlength":255,"InputLabel":"Web Lead Source:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"source","ProfilingFieldNumber":0,"DisablePrefill":true}],[{"Id":184583,"Name":"Global_Ultimate_DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"Global Ultimate DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184584,"Name":"Domestic_Ultimate_DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"Domestic Ultimate DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":184585,"Name":"License_Accepted__c","IsRequired":true,"Datatype":"single_checkbox","PicklistValues":[{"label":"","value":"yes"}],"DefaultValue":"yes","InputLabel":"\u003Cstrong\u003EYes, I accept the License Agreement and the Export Regulation.\u003C\/strong\u003E","InputInitialValue":"","InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                    [{"Id":184568,"Name":"Profiling","Datatype":"profiling","InputInitialValue":"","ProfilingFieldNumber":0,"IsLabelToLeft":true}]],"fieldsetRows":[],"action":"https:\/\/info.softwareag.com\/index.php\/leadCapture\/save2","munchkinId":"858-DJP-749","invalidInputMsg":"Invalid Input","formSubmitFailedMsg":"Submission failed, please try again later.","isPreview":null};
-                                                    MktoForms2.setOptions({baseUrl:"/js/forms2/"});
-                                                    var isDev = false;
-                                                    if(isDev && window.console && window.JSON){
-                                                      console.log(JSON.stringify(formDescriptor, null, "  "));
-                                                    }
-                                                    formDescriptor.lpId = 32995;
-                                                    var form = MktoForms2.processForm(formDescriptor, function (form){
-                                                      var lpFields = {"lpId":32995,"subId":189,"munchkinId":"858-DJP-749","lpurl":"\/\/info.softwareag.com\/019-webMethods-Service-Designer_lpp.html?cr={creative}&kw={keyword}"};
-                                                      var pageFields = MktoForms2.getPageFields();
-                                                      form.addHiddenFields(lpFields);
-                                                      form.addHiddenFields(pageFields);
-                                                      if(window.mktoPreFillFields){
-                                                        form.setValuesCoerced(mktoPreFillFields);
-                                                      }
-                                                      if(!form.EnableDeferredMode){
-                                                        form.render();
-                                                      }
-                                                    });     
-                                                  })();
+                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);       
+                                                })();
                                             }
     
                                             break;
@@ -351,56 +287,31 @@
                                                 * Below Script loads the "webMethods.io Connector Builder.Registration download form" from the Marketo. This script is copied from the Marketo page: "info.softwareag.com/002a-TECHcommunity-webMethods.ioConnectorBuilder_DemoLP.html"
                                                 */
                                                 (function (){
-                                                    var formDescriptor = {"Id":12313,"Vid":12313,"Status":"approved","Name":"002a - TECHcommunity - webMethods.io Connector Builder.Registration form","Description":"","Layout":"left","GutterWidth":10,"OffsetWidth":10,"HasTwoButtons":true,"SubmitLabel":"Submit","ResetLabel":"Clear","ButtonLocation":"26","LabelWidth":100,"FieldWidth":150,"ToolTipType":"none","FontFamily":"Arial, Verdana, sans-serif","FontSize":"13px","FontColor":"#333","FontUrl":null,"LineMargin":10,"ProcessorVersion":2,"CreatedByUserid":1881,"ProcessOptions":{"language":"English","locale":"en_US","profiling":{"isEnabled":false,"numberOfProfilingFields":3,"alwaysShowFields":[]},"socialSignOn":{"isEnabled":false,"enabledNetworks":[],"cfId":null,"codeSnippet":null}},"EnableDeferredMode":0,"ButtonType":null,"ButtonImageUrl":null,"ButtonText":null,"ButtonSubmissionText":"Please Wait","ButtonStyle":{"id":15,"className":"mktoInset","css":".mktoForm .mktoButtonWrap.mktoInset .mktoButton {\ncolor:#000;\nbackground:#fff;\nborder:1px solid #aeb0b6;\npadding:0.4em 1em;\nfont-size:1em;\nbox-shadow: 1px 1px 6px 1px #ccc;\nbackground-color:#f5f5f5;\nbackground-image: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#dfdfdf));\nbackground-image: -webkit-linear-gradient(top, #f5f5f5, #dfdfdf);\nbackground-image: -moz-linear-gradient(top, #f5f5f5, #dfdfdf);\nbackground-image: linear-gradient(to bottom, #f5f5f5, #dfdfdf);\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:hover {\nborder:1px solid #999;\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:focus {\noutline:none;\nborder:1px solid #999;\n}\n.mktoForm .mktoButtonWrap.mktoInset .mktoButton:active{\nbox-shadow:inset 1px 1px 6px 1px #ccc;\nbackground-color:#dfdfdf;\nbackground-image: -webkit-gradient(linear, left top, left bottom, from(#dfdfdf), to(#f5f5f5));\nbackground-image: -webkit-linear-gradient(top, #dfdfdf, #f5f5f5);\nbackground-image: -moz-linear-gradient(top, #dfdfdf, #f5f5f5);\nbackground-image: linear-gradient(to bottom, #dfdfdf, #f5f5f5);\n}\n","buttonColor":null},"ThemeStyle":{"id":4,"displayOrder":2,"name":"Inset","backgroundColor":"#FFF","layout":"left","fontFamily":"Helvetica, Arial, sans-serif","fontSize":"13px","fontColor":"#333","offsetWidth":10,"gutterWidth":10,"labelWidth":100,"fieldWidth":150,"lineMargin":10,"useBackgroundColorOnPreview":false,"buttonStyleId":15},"ThemeStyleOverride":null,"rows":[
-                                                        [{"Id":217467,"Name":"FirstName","IsRequired":true,"Datatype":"string","InputLabel":"First Name:","InputInitialValue":currentuserFirstName,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":217468,"Name":"LastName","IsRequired":true,"Datatype":"string","InputLabel":"Last Name:","InputInitialValue":currentuserLastName,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":217466,"Name":"Email","IsRequired":true,"Datatype":"email","Maxlength":255,"InputLabel":"Email Address: ","InputInitialValue":currentuserEmail,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ValidationMessage":"Must be valid email. \u003Cspan class='mktoErrorDetail'\u003Eexample@yourdomain.com\u003C\/span\u003E"}],
-                                                        [{"Id":217469,"Name":"Company","IsRequired":true,"Datatype":"string","InputLabel":"Company Name:","InputInitialValue":currentuserCompany,"InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":217470,"Name":"Address_Visit_Country__c","IsRequired":true,"Datatype":"picklist","Maxlength":255,"PicklistValues":countryPicklistValues,"DefaultValue":[currentuserCountry],"InputLabel":"Country:","InputInitialValue":"","InputSourceChannel":"constant","VisibleRows":4,"FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":217471,"Name":"Address_Visit_State__c","IsRequired":true,"Datatype":"picklist","Maxlength":255,"PicklistValues":state_provincePicklistValues,"DefaultValue":[state_province],"InputLabel":"State \/ Province:","InputInitialValue":"","InputSourceChannel":"constant","VisibleRows":4,"FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required.","VisibilityRule":{"defaultVisibility":"hide",
-                                                        "rules":
-                                                            [{"subjectField":"Address_Visit_Country__c","operator":"equal","values":["USA"],"altLabel":"State:","picklistFilterValues":statePicklistValues},
-                                                            {"subjectField":"Address_Visit_Country__c","operator":"equal","values":["Canada"],"altLabel":"Province:","picklistFilterValues":provincePicklistValues}]}}],
-                                                        [{"Id":217489,"Name":"License_Accepted__c","IsRequired":true,"Datatype":"single_checkbox","PicklistValues":[{"label":"","value":"yes"}],"DefaultValue":"yes","InputLabel":"\u003Cstrong\u003EYes, I accept the License Agreement and the Export Regulation.\u003C\/strong\u003E","InputInitialValue":"","InputSourceChannel":"constant","FieldWidth":220,"LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required."}],
-                                                        [{"Id":217473,"Name":"temporaryEmailOptIn","Datatype":"single_checkbox","PicklistValues":[{"label":"","value":"yes"}],"InputLabel":"\u003Cstrong\u003EI opt-in to hearing from Software AG *\u003C\/strong\u003E","InputInitialValue":"","InputSourceChannel":"constant","LabelWidth":280,"ProfilingFieldNumber":0,"ValidationMessage":"This field is required.","VisibilityRule":{"defaultVisibility":"show","rules":[{"subjectField":"Address_Visit_Country__c","operator":"equal","values":["USA"],"altLabel":"\u003Cstrong\u003EI opt-in to hearing from Software AG *\u003C\/strong\u003E"}]}}],[{"Id":217474,"Name":"DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217475,"Name":"dnbAddress","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Address:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217476,"Name":"dnbAnnualRevenueCurrency","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Annual Revenue Currency:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217477,"Name":"dnbAnnualRevenue","Datatype":"hidden","InputLabel":"D&B Annual Revenue:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217478,"Name":"dnbCity","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B City:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217479,"Name":"dnbEmployeeCount","Datatype":"hidden","InputLabel":"D&B Employee Count:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217480,"Name":"dnbPostalCode","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B Postal Code:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217481,"Name":"dnbSICCode","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B SIC Code:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217482,"Name":"dnbSICDescription","Datatype":"hidden","Maxlength":255,"InputLabel":"D&B SIC Description:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217483,"Name":"campaignMedium","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Medium:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_medium","ProfilingFieldNumber":0}],[{"Id":217484,"Name":"campaignName","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Name:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_campaign","ProfilingFieldNumber":0}],[{"Id":217485,"Name":"campaignSource","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Source:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_source","ProfilingFieldNumber":0}],[{"Id":217486,"Name":"Web_Lead_Source__c","Datatype":"hidden","Maxlength":255,"InputLabel":"Web Lead Source:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"source","ProfilingFieldNumber":0,"DisablePrefill":true}],[{"Id":217487,"Name":"Global_Ultimate_DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"Global Ultimate DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217488,"Name":"Domestic_Ultimate_DUNS_Number__c","Datatype":"hidden","Maxlength":15,"InputLabel":"Domestic Ultimate DUNS Number:","InputInitialValue":"","InputSourceChannel":"constant","ProfilingFieldNumber":0}],[{"Id":217490,"Name":"campaignRegion","Datatype":"hidden","Maxlength":255,"InputLabel":"Campaign Region:","InputInitialValue":"","InputSourceChannel":"url","InputSourceSelector":"utm_region","ProfilingFieldNumber":0,"DisablePrefill":true}],
-                                                        [{"Id":217472,"Name":"Profiling","Datatype":"profiling","InputInitialValue":"","ProfilingFieldNumber":0,"IsLabelToLeft":true}]],"fieldsetRows":[],"action":"https:\/\/info.softwareag.com\/index.php\/leadCapture\/save","munchkinId":"858-DJP-749","invalidInputMsg":"Invalid Input","formSubmitFailedMsg":"Submission failed, please try again later.","isPreview":null};
-                                                    MktoForms2.setOptions({baseUrl:"/js/forms2/"});
-                                                    var isDev = false;
-                                                    if(isDev && window.console && window.JSON){
-                                                      console.log(JSON.stringify(formDescriptor, null, "  "));
-                                                    }
-                                                    formDescriptor.lpId = 41021;
-                                                    var form = MktoForms2.processForm(formDescriptor, function (form){
-                                                      var lpFields = {"lpId":41021,"subId":189,"munchkinId":"858-DJP-749","lpurl":"\/\/info.softwareag.com\/002a-TECHcommunity-webMethods.ioConnectorBuilder_DemoLP.html?cr={creative}&kw={keyword}"};
-                                                      var pageFields = MktoForms2.getPageFields();
-                                                      form.addHiddenFields(lpFields);
-                                                      form.addHiddenFields(pageFields);
-                                                      if(window.mktoPreFillFields){
-                                                        form.setValuesCoerced(mktoPreFillFields);
-                                                      }
-                                                      if(!form.EnableDeferredMode){
-                                                        form.render();
-                                                      }
-                                                    });     
-                                                  })();       
+                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);    
+                                                })();       
                                             }
                                         
                                         default:
                                     }
+
+                                } catch (e) {
+                                    console.error(e);
+                                } finally {
+                                    //Do nothing
                                 }
-                                
-                            },
-                            async: false
+                            }
                             
-                        });
-                    } 
-                    //If User is not Logged in then redirect to Signup page.
-                    else{
-                        DiscourseURL.routeToUrl('/signup');
-                    }
+                        },
+                        async: false
+                        
+                    });
+                } 
+                //If User is not Logged in then redirect to Signup page.
+                else{
+                    DiscourseURL.routeToUrl('/signup');
+                }
             }
-        return result;
-        }
-        
+            return result;
+        }        
     });
     </script>
