@@ -1,14 +1,14 @@
 <!-- SYSTEM JAVASCRIPT - DO NOT EDIT -->
-<script type="text/javascript" nonce="{{nonce}}">
-    function fieldValidate(field) {
-      /* call Mkto.setError(field, message) and return false to mark a field value invalid */
-      /* return 'skip' to bypass the built-in validations */
-      return true;
-    }
-    </script>
-    <script type="text/javascript" src="https://munchkin.marketo.net/munchkin.js" nonce="{{nonce}}"></script>
-    <script src="https://info.softwareag.com/js/forms2/js/forms2.min.js" nonce="{{nonce}}"></script>
     <script type="text/javascript" nonce="{{nonce}}">
+    //Remove form spinner after form is loaded
+    function removeFormSpinner() {
+		let spinner = document.querySelector('form.marketo-form .spinner-wrapper');
+		if(spinner){ 
+			document.querySelector('form.marketo-form').removeChild(spinner);
+		}
+	}
+	    
+	    
     var profiling = {
       isEnabled: false,
       numberOfProfilingFields: 3,
@@ -16,26 +16,21 @@
     };
     var mktFormLanguage = 'English'
     </script>
-    <script type="text/javascript" src="https://info.softwareag.com/js/mktFormSupport.js" nonce="{{nonce}}"></script>
-    <script type="text/javascript" nonce="{{nonce}}">
-    const { h } = require('virtual-dom');
-    
-      function formSubmit(elt) {
-        return Mkto.formSubmit(elt);
-      }
-      function formReset(elt) {
-        return Mkto.formReset(elt);
-      }
-    </script>
     
     <!-- Created Theme component to add Download form in Discourse [By Webdirekt on 02-11-2020] -->
     <script type="text/discourse-plugin" version="0.8">
     const { h } = require('virtual-dom');
-    const DiscourseURL = require('discourse/lib/url').default;
-    
+    const DiscourseURL = require('discourse/lib/url').default;    
+        
+	
     /* Below code will render "download_form" widget before rendering "post-menu" widget on Topic page*/
     api.decorateWidget("post-menu:before", helper => {
       const path = window.location.pathname;
+      //Required javascripts for the download form   
+      const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
+      const munchkinJsUrl = "https://munchkin.marketo.net/munchkin.js";
+      const mktFormSupportJsUrl = "https://info.softwareag.com/js/mktFormSupport.js";
+      
       let marketoFormId = null;
       if(/^\/t\/webmethods-free-trial-download\//.test(path)){
           marketoFormId = "mktoForm_12281";
@@ -50,10 +45,32 @@
           marketoFormId = "mktoForm_12313";
       }
       else{
-          //do nothing;
+	    //Do nothing
       }
       
-      if (helper.attrs.firstPost && marketoFormId) { 
+      if (helper.attrs.firstPost && marketoFormId) {
+      		//If required Downlaod form javascript is not present then include it dynalically in the head tag. 
+      		let forms2MinJs = document.querySelector('head script[src="' + forms2MinJsUrl + '"]');
+		if(!forms2MinJs) {
+			forms2MinJs = document.createElement("script");
+			let munchkinJs = document.createElement("script");
+			let mktFormSupportJs = document.createElement("script");
+
+			forms2MinJs.src = forms2MinJsUrl;	
+			forms2MinJs.setAttribute("nonce", "");
+			document.head.appendChild(forms2MinJs);
+
+			munchkinJs.src = munchkinJsUrl;
+			munchkinJs.setAttribute("nonce", "");
+			document.head.appendChild(munchkinJs);
+
+			mktFormSupportJs.src = mktFormSupportJsUrl;
+			mktFormSupportJs.setAttribute("nonce", "");
+			document.head.appendChild(mktFormSupportJs);
+
+		}
+      		helper.attrs.forms2MinJs = forms2MinJs;
+      
           helper.attrs.marketoFormId = marketoFormId;
           //Rendering download form based on the current topic.
           return helper.attach("download_form", helper.attrs); 
@@ -71,11 +88,13 @@
     /* Created new download_form widget which will display only if current URL contains  "/t/webmethods-free-trial/" */
     api.createWidget("download_form", {
         tagName: "div.d-form",
+        buildKey: () => "download_form",
         html(attrs) {
     
             let userFields = this.site.get("user_fields");
             let result = [];
             const path = window.location.pathname;
+		
             if(true) {
                 //Comment the below code to change the way for getting Username as latest versions of Discourse do not have support for the "Discourse.User.currentPro". [Modified by: Saurabh; Date: 14-10-2021]
                 //var currentusername = Discourse.User.currentProp('username'); 
@@ -161,12 +180,24 @@
                             // Else Display Download Form.
                             else{
                                 //Generating HTML Form with input fields and button.
-                                result.push(h('form.marketo-form.mktoForm.mktoHasWidth.mktoLayoutLeft',{"attributes":{
-                                    "method": "post",
-                                    "enctype": "application/x-www-form-urlencoded",
-                                    "id": attrs.marketoFormId,
-                                    "name": attrs.marketoFormId
-                                }}));
+                                if(!window.MktoForms2) { 
+                                //If Marketo script is not loaded then render form along with spinner.	
+                                                    result.push(h('form.marketo-form.mktoForm.mktoHasWidth.mktoLayoutLeft',{"attributes":{
+                                                    "method": "post",
+                                                    "enctype": "application/x-www-form-urlencoded",
+                                                    "id": attrs.marketoFormId,
+                                                    "name": attrs.marketoFormId
+                                    }}, h('div.spinner-wrapper',{"attributes":{"style":"display:flex; justify-content:center; padding:0.5em"}}, h('span.spinner', ""))));
+
+                                }else{
+                                    result.push(h('form.marketo-form.mktoForm.mktoHasWidth.mktoLayoutLeft',{"attributes":{
+                                                    "method": "post",
+                                                    "enctype": "application/x-www-form-urlencoded",
+                                                    "id": attrs.marketoFormId,
+                                                    "name": attrs.marketoFormId
+                                    }}));
+
+                                }
 
                                 try {
                                     
@@ -243,7 +274,18 @@
                                                 * Below Script loads the "webMethods Integration download form" from the Marketo. This script is copied from the Marketo page: "https://info.softwareag.com/webMthodsApplicationIntegrationDownload.html"
                                                 */
                                                 (function (){
-                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);  
+                                                    if(!window.MktoForms2) {
+                                                        attrs.forms2MinJs.onload = function() {
+                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);  
+                                                            //Remove spinner after form is displayed
+                                                            removeFormSpinner(); 
+                                                        };
+                                                    }else{
+                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);  
+                                                        //Remove spinner after form is displayed
+                                                        removeFormSpinner();
+                                                    }
+                                                
                                                 })();
                                             }
     
@@ -257,7 +299,18 @@
                                                 * Below Script loads the "Adabas & Natural download form" from the Marketo. This script is copied from the Marketo page: "https://info.softwareag.com/ada_nat_docker.html"
                                                 */
                                                 (function (){
-                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12282, autofillDownloadFormFields);   
+                                                    if(!window.MktoForms2) {
+                                                        attrs.forms2MinJs.onload = function() {
+                                                                var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12282, autofillDownloadFormFields);
+                                                                //Remove spinner after form is displayed
+                                                                removeFormSpinner();  
+                                                        };
+                                                    }else{
+                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12282, autofillDownloadFormFields);
+                                                        //Remove spinner after form is displayed
+                                                        removeFormSpinner();
+                                                    }
+
                                                 })();
                                             }
                                             
@@ -274,7 +327,18 @@
                                                 */ 
                                                 
                                                 (function (){
-                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);       
+                                                    if(!window.MktoForms2) {
+                                                        attrs.forms2MinJs.onload = function() {
+                                                                var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);       
+                                                            //Remove spinner after form is displayed
+                                                                removeFormSpinner();   
+                                                        };
+                                                    }else{
+                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);       
+                                                        //Remove spinner after form is displayed
+                                                            removeFormSpinner(); 
+                                                    }
+							
                                                 })();
                                             }
     
@@ -287,7 +351,18 @@
                                                 * Below Script loads the "webMethods.io Connector Builder.Registration download form" from the Marketo. This script is copied from the Marketo page: "info.softwareag.com/002a-TECHcommunity-webMethods.ioConnectorBuilder_DemoLP.html"
                                                 */
                                                 (function (){
-                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);    
+                                                    if(!window.MktoForms2) {
+                                                        attrs.forms2MinJs.onload = function() {
+                                                                var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);    
+                                                        //Remove spinner after form is displayed
+                                                            removeFormSpinner();  
+                                                        };
+                                                    }else{
+                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);    
+                                                        //Remove spinner after form is displayed
+                                                            removeFormSpinner(); 
+                                                    }
+                                                    
                                                 })();       
                                             }
                                         
@@ -312,6 +387,7 @@
                 }
             }
             return result;
-        }        
+	 }
     });
+    
     </script>
