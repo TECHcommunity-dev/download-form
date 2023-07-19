@@ -1,0 +1,6 @@
+banned_email_domains:
+  type: list
+  list_type: simple
+  default: ""
+  description:
+    en: "While requesting download restrict access to certain email domains."
