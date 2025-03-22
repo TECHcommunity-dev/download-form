@@ -1,408 +1,351 @@
 <script type="text/javascript" nonce="{{nonce}}">
 
-    //Remove form spinner after form is loaded
-    function removeFormSpinner() {
-		let spinner = document.querySelector('form.marketo-form .spinner-wrapper');
-		if(spinner){ 
-			document.querySelector('form.marketo-form').removeChild(spinner);
-		}
-	}	    
-	    
-    var profiling = {
-      isEnabled: false,
-      numberOfProfilingFields: 3,
-      alwaysShowFields: [ 'mktDummyEntry']
-    };
-
-    var mktFormLanguage = 'English'
-</script>
-    
-<!-- Created Theme component to add Download form in Discourse [By Webdirekt on 02-11-2020] -->
-<script type="text/discourse-plugin" version="0.8">
-    const { h } = require('virtual-dom');
-    const DiscourseURL = require('discourse/lib/url').default;    
-        
-	
-    /* Below code will render "download_form" widget before rendering "post-menu" widget on Topic page*/
-    api.decorateWidget("post-menu:before", helper => {
-        const path = window.location.pathname;
-        //Required javascripts for the download form   
-        const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
-        const munchkinJsUrl = "https://munchkin.marketo.net/munchkin.js";
-        const mktFormSupportJsUrl = "https://info.softwareag.com/js/mktFormSupport.js";
-        
-        let marketoFormId = null;
-        if(/^\/t\/webmethods-free-trial-download\//.test(path)) {
-            marketoFormId = "mktoForm_12281";
-        } 
-        else if(/^\/t\/adabas-and-natural-community-edition-download-form\//.test(path)) {
-            marketoFormId = "mktoForm_12282";
-        }
-        else if(/^\/t\/webmethods-service-designer-download-form\//.test(path)) {
-            marketoFormId = "mktoForm_8655";
-        }
-        else if(/^\/t\/webmethods-io-connector-builder-download-form\//.test(path)) {
-            marketoFormId = "mktoForm_12313";
-        }
-        else if(/^\/t\/webmethods-service-designer-11-1-download-form\//.test(path)) {
-            marketoFormId = "mktoForm_16841";
-        }
-        else {
-            //Do nothing
-        }
-      
-        if (helper.attrs.firstPost && marketoFormId) {
-            //If required Download form javascript is not present then include it dynamically in the head tag. 
-            let forms2MinJs = document.querySelector('head script[src="' + forms2MinJsUrl + '"]');
-		
-            if(!forms2MinJs) {
-                forms2MinJs = document.createElement("script");
-                let munchkinJs = document.createElement("script");
-                let mktFormSupportJs = document.createElement("script");
-
-                forms2MinJs.src = forms2MinJsUrl;	
-                forms2MinJs.setAttribute("nonce", "");
-                document.head.appendChild(forms2MinJs);
-
-                munchkinJs.src = munchkinJsUrl;
-                munchkinJs.setAttribute("nonce", "");
-                document.head.appendChild(munchkinJs);
-
-                mktFormSupportJs.src = mktFormSupportJsUrl;
-                mktFormSupportJs.setAttribute("nonce", "");
-                document.head.appendChild(mktFormSupportJs);
-            }
-
-            helper.attrs.forms2MinJs = forms2MinJs;
-        
-            helper.attrs.marketoFormId = marketoFormId;
-            //Rendering download form based on the current topic.
-            return helper.attach("download_form", helper.attrs); 
-        } 
-    
-    }); 
-    
-    function checkNull(value) {
-        if(typeof(value) != "undefined" && value != null && value !='null') {
-            return value;
-        } 
-        return "";
+//Remove form spinner after form is loaded
+function removeFormSpinner() {
+    let spinner = document.querySelector('form.marketo-form .spinner-wrapper');
+    if (spinner) {
+        document.querySelector('form.marketo-form').removeChild(spinner);
     }
-    
-    /* Created new download_form widget which will display only if current URL contains  "/t/webmethods-free-trial/" */
-    api.createWidget("download_form", {
-        tagName: "div.d-form",
-        buildKey: () => "download_form",
-        html(attrs) {    
-            let userFields = this.site.get("user_fields");
-            let result = [];
-            const path = window.location.pathname;
-		
-            if(true) {
-                //Comment the below code to change the way for getting Username as latest versions of Discourse do not have support for the "Discourse.User.currentPro". [Modified by: Saurabh; Date: 14-10-2021]
-                var currentuser = api.getCurrentUser(); 
-                var currentusername;
-                if(currentuser){
-                    currentusername = currentuser.username;
-                }
-                if (currentusername  && typeof currentusername !== 'undefined'){
-                    var fulllinktojson = "/users/" + currentusername + ".json"; 
-                    
-                    $.ajax({
-                        type: 'GET',
-                        url: fulllinktojson,
-                        dataType: 'json',
-                        success: function(json) {
-                            //List if banned countries
-                            let bannedCountries = ["Afghanistan","Algeria","Angola","Armenia","Azerbaijan","Belarus","Birma/Myanmar","Burundi","Cambodia","Central African Republic","China","Congo","Cyprus","Democratic Rep. Of Congo","Egypt","Eritrea","Ethiopia","Georgia","Guinea","Guinea-Bissau","Haiti","Iraq","Israel","Jordan","Kazakhstan","Kyrgyzstan","Laos","Lebanon","Libya","Macau","Mali","Moldova","Mongolia","Mozambique","Myanmar","Nigeria","Pakistan","Russia","Russian federation","Somalia","South Sudan","Sri Lanka","Tajikistan","Tanzania","Tunisia","Turkmenistan","Uganda","Ukraine","Uzbekistan","Venezuela","Vietnam","Yemen","Zimbabwe"];
-                            // Binjan; 2023.07.18; banned email domains
-                            const bannedEmailDomains = settings.banned_email_domains; 
+}
 
-                            let isBelongsToBannedCountry = false;
-                            let isBelongsToDownloadsGroup = false;
+var profiling = {
+    isEnabled: false,
+    numberOfProfilingFields: 3,
+    alwaysShowFields: ['mktDummyEntry']
+};
 
-                            // Binjan; 2023.07.18; current user belong to banned email domain status
-                            let isBelongsToBannedEmailDomain = false; 
-                            
-                            //Getting user-fields id to fetch user-fields of the current data
-                            let countryFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Country").toLowerCase());
-                            let stateFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("State").toLowerCase());
-                            let provinceFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Province").toLowerCase());
-                            let firstnameFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("First name").toLowerCase());
-                            let lastnameFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Last name").toLowerCase());
-                            let companyFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Company").toLowerCase());
-                            let jobTitleFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Job Title").toLowerCase());                            
-                            /*
-                            ** Getting Current Login User Deatils.
-                            */
-                            //Email
-                            var currentuserEmail = String(json.user.email);
-                            //First Name
-                            var currentuserFirstName = "";
-                            if(firstnameFieldObj) { currentuserFirstName = checkNull(String(json.user.user_fields[firstnameFieldObj.id])); }
-                            //Last Name
-                            var currentuserLastName = ""
-                            if(lastnameFieldObj) { currentuserLastName = checkNull(String(json.user.user_fields[lastnameFieldObj.id])); }
-                            //Job Title
-                            var currentuserJob = "";
-                            if(jobTitleFieldObj) { currentuserJob = checkNull(String(json.user.user_fields[jobTitleFieldObj.id])); }
-                            //Country
-                            var currentuserCountry = "";
-                            if(countryFieldObj) { currentuserCountry = checkNull(String(json.user.user_fields[countryFieldObj.id])); }
-                            //Company
-                            var currentuserCompany = "";
-                            if(companyFieldObj) { currentuserCompany = checkNull(String(json.user.user_fields[companyFieldObj.id])); }
-                            // State
-                            var currentuserState = "";
-                            if(stateFieldObj) { currentuserState = checkNull(String(json.user.user_fields[stateFieldObj.id])); }
-                            // Province
-                            var currentuserProvince = "";
-                            if(provinceFieldObj) { currentuserProvince = checkNull(String(json.user.user_fields[provinceFieldObj.id])); }
-                            
-                            //Groups
-                            var currentuserGroups = [];
-                            (json.user.groups).forEach(function (groupObj, index) {
-                                currentuserGroups.push(String(groupObj.name).toLowerCase());
-                            });
-                            
-                            //check whether user belongs to banned country
-                            var lowerCaseBannedCountries = bannedCountries.map(function(value) {
+var mktFormLanguage = 'English';
+
+function checkNull(value) {
+    if (typeof (value) != "undefined" && value != null && value != 'null') {
+        return value;
+    }
+    return "";
+}
+
+/* Created new download_form widget which will display only if current URL contains  "/t/webmethods-free-trial/" */
+api.createWidget("download_form", {
+    tagName: "div.d-form",
+    buildKey: () => "download_form",
+    html(attrs) {
+        let userFields = this.site.get("user_fields");
+        let result = [];
+        const path = window.location.pathname;
+
+        if (true) {
+            var currentuser = api.getCurrentUser();
+            var currentusername;
+            if (currentuser) {
+                currentusername = currentuser.username;
+            }
+            if (currentusername && typeof currentusername !== 'undefined') {
+                var fulllinktojson = "/users/" + currentusername + ".json";
+
+                $.ajax({
+                    type: 'GET',
+                    url: fulllinktojson,
+                    dataType: 'json',
+                    success: function (json) {
+                        let bannedCountries = ["Afghanistan", "Algeria", "Angola", "Armenia", "Azerbaijan", "Belarus", "Birma/Myanmar", "Burundi", "Cambodia", "Central African Republic", "China", "Congo", "Cyprus", "Democratic Rep. Of Congo", "Egypt", "Eritrea", "Ethiopia", "Georgia", "Guinea", "Guinea-Bissau", "Haiti", "Iraq", "Israel", "Jordan", "Kazakhstan", "Kyrgyzstan", "Laos", "Lebanon", "Libya", "Macau", "Mali", "Moldova", "Mongolia", "Mozambique", "Myanmar", "Nigeria", "Pakistan", "Russia", "Russian federation", "Somalia", "South Sudan", "Sri Lanka", "Tajikistan", "Tanzania", "Tunisia", "Turkmenistan", "Uganda", "Ukraine", "Uzbekistan", "Venezuela", "Vietnam", "Yemen", "Zimbabwe"];
+                        const bannedEmailDomains = settings.banned_email_domains;
+
+                        let isBelongsToBannedCountry = false;
+                        let isBelongsToDownloadsGroup = false;
+                        let isBelongsToBannedEmailDomain = false;
+
+                        let countryFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Country").toLowerCase());
+                        let stateFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("State").toLowerCase());
+                        let provinceFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Province").toLowerCase());
+                        let firstnameFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("First name").toLowerCase());
+                        let lastnameFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Last name").toLowerCase());
+                        let companyFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Company").toLowerCase());
+                        let jobTitleFieldObj = userFields.find(obj => obj.name.toLowerCase() == ("Job Title").toLowerCase());
+
+                        var currentuserEmail = String(json.user.email);
+                        var currentuserFirstName = "";
+                        if (firstnameFieldObj) { currentuserFirstName = checkNull(String(json.user.user_fields[firstnameFieldObj.id])); }
+                        var currentuserLastName = ""
+                        if (lastnameFieldObj) { currentuserLastName = checkNull(String(json.user.user_fields[lastnameFieldObj.id])); }
+                        var currentuserJob = "";
+                        if (jobTitleFieldObj) { currentuserJob = checkNull(String(json.user.user_fields[jobTitleFieldObj.id])); }
+                        var currentuserCountry = "";
+                        if (countryFieldObj) { currentuserCountry = checkNull(String(json.user.user_fields[countryFieldObj.id])); }
+                        var currentuserCompany = "";
+                        if (companyFieldObj) { currentuserCompany = checkNull(String(json.user.user_fields[companyFieldObj.id])); }
+                        var currentuserState = "";
+                        if (stateFieldObj) { currentuserState = checkNull(String(json.user.user_fields[stateFieldObj.id])); }
+                        var currentuserProvince = "";
+                        if (provinceFieldObj) { currentuserProvince = checkNull(String(json.user.user_fields[provinceFieldObj.id])); }
+
+                        var currentuserGroups = [];
+                        (json.user.groups).forEach(function (groupObj, index) {
+                            currentuserGroups.push(String(groupObj.name).toLowerCase());
+                        });
+
+                        var lowerCaseBannedCountries = bannedCountries.map(function (value) {
+                            return value.toLowerCase();
+                        });
+
+                        if (lowerCaseBannedCountries.indexOf(currentuserCountry.toLowerCase()) !== -1) {
+                            isBelongsToBannedCountry = true;
+                        }
+
+                        if (bannedEmailDomains.length) {
+                            var lowerCaseBannedEmailDomains = bannedEmailDomains.split("|").map(function (value) {
                                 return value.toLowerCase();
                             });
 
-                            if(lowerCaseBannedCountries.indexOf(currentuserCountry.toLowerCase()) !== -1) {
-                                isBelongsToBannedCountry = true;    
-                            }
+                            var currentuserEmailDomain = currentuserEmail.substring(currentuserEmail.indexOf("@") + 1).toLowerCase();
 
-                            // Binjan; 2023.07.18; check whether user belongs to banned email domain
-                            if (bannedEmailDomains.length) {                                
-                                var lowerCaseBannedEmailDomains = bannedEmailDomains.split("|").map(function(value) {
-                                    return value.toLowerCase();
-                                });
+                            if (lowerCaseBannedEmailDomains.indexOf(currentuserEmailDomain) !== -1) {
+                                isBelongsToBannedEmailDomain = true;
+                            }
+                        }
 
-                                // get current user email domain
-                                var currentuserEmailDomain = currentuserEmail.substring(currentuserEmail.indexOf("@")+1).toLowerCase();
-                                
-                                if(lowerCaseBannedEmailDomains.indexOf(currentuserEmailDomain) !== -1) {
-                                    isBelongsToBannedEmailDomain = true;    
-                                }
-                            }
-                            
-                            //check whether user belongs to Downloads group
-                            if(currentuserGroups.indexOf(("Downloads").toLowerCase()) !== -1) {
-                                isBelongsToDownloadsGroup = true;    
-                            }
+                        if (currentuserGroups.indexOf(("Downloads").toLowerCase()) !== -1) {
+                            isBelongsToDownloadsGroup = true;
+                        }
 
-                            //check whether user belongs to Downloads group
-                            if(currentuserGroups.indexOf(("Downloads").toLowerCase()) !== -1) {
-                                isBelongsToDownloadsGroup = true;    
-                            }                            
-                            
-                            // Binjan; 2023.07.18; 
-                            //If user belongs to Banned Country or Banned email domain and not present in Downloads group
-                            if((isBelongsToBannedCountry || isBelongsToBannedEmailDomain) && !isBelongsToDownloadsGroup) {
-                                DiscourseURL.routeToUrl('/g/Downloads');
-                            }
-                            // Else Display Download Form.
-                            else {
-                                //Generating HTML Form with input fields and button.
-                                if(!window.MktoForms2) { 
-                                    //If Marketo script is not loaded then render form along with spinner.	
-                                    result.push(h('form.marketo-form.mktoForm.mktoHasWidth.mktoLayoutLeft', {"attributes": {
+                        if ((isBelongsToBannedCountry || isBelongsToBannedEmailDomain) && !isBelongsToDownloadsGroup) {
+                            DiscourseURL.routeToUrl('/g/Downloads');
+                        } else {
+                            if (!window.MktoForms2) {
+                                result.push(h('form.marketo-form.mktoForm.mktoHasWidth.mktoLayoutLeft', {
+                                    "attributes": {
                                         "method": "post",
                                         "enctype": "application/x-www-form-urlencoded",
                                         "id": attrs.marketoFormId,
                                         "name": attrs.marketoFormId
-                                    }}, h('div.spinner-wrapper',{"attributes":{"style":"display:flex; justify-content:center; padding:0.5em"}}, h('span.spinner', ""))));
+                                    }
+                                }, h('div.spinner-wrapper', { "attributes": { "style": "display:flex; justify-content:center; padding:0.5em" } }, h('span.spinner', ""))));
 
-                                } else {
-                                    result.push(h('form.marketo-form.mktoForm.mktoHasWidth.mktoLayoutLeft',{"attributes": {
+                            } else {
+                                result.push(h('form.marketo-form.mktoForm.mktoHasWidth.mktoLayoutLeft', {
+                                    "attributes": {
                                         "method": "post",
                                         "enctype": "application/x-www-form-urlencoded",
                                         "id": attrs.marketoFormId,
                                         "name": attrs.marketoFormId
-                                    }}));
+                                    }
+                                }));
+                            }
+
+                            try {
+                                let state_province = "";
+                                if (currentuserCountry && currentuserCountry.toUpperCase() == 'USA') {
+                                    state_province = currentuserState;
+                                } else if (currentuserCountry && currentuserCountry.toUpperCase() == 'CANADA') {
+                                    state_province = currentuserProvince;
                                 }
 
-                                try {                                    
-                                    let state_province = "";
-                                    //Set the State/Province based on selected Country.
-                                    if(currentuserCountry && currentuserCountry.toUpperCase() == 'USA') {
-                                        state_province = currentuserState;
-                                    } else if(currentuserCountry && currentuserCountry.toUpperCase() == 'CANADA') {
-                                        state_province = currentuserProvince;
+                                let autofillDownloadFormFields = function () {
+                                    let firstNameInput = document.querySelector('input#FirstName')
+                                    if (firstNameInput) {
+                                        firstNameInput.value = currentuserFirstName;
                                     }
-                                    
-                                    let autofillDownloadFormFields = function() {
-                                        let firstNameInput = document.querySelector('input#FirstName')
-                                        if(firstNameInput) {
-                                            firstNameInput.value = currentuserFirstName;
-                                        }
-                                        let lastNameInput = document.querySelector('input#LastName');
-                                        if(lastNameInput) {
-                                            lastNameInput.value = currentuserLastName
-                                        }
-                                        let emailInput = document.querySelector('input#Email');
-                                        if(emailInput) {
-                                            emailInput.value = currentuserEmail;
-                                        }
-                                        let countryInput = document.querySelector('select#Address_Visit_Country__c');
-                                        if(countryInput) {
-                                            countryInput.value = currentuserCountry;
-                                            countryInput.dispatchEvent(new Event('change'));
-                                        }
-                                        let StateProvinceInput = document.querySelector('select#Address_Visit_State__c');
-                                        if(StateProvinceInput){
-                                            StateProvinceInput.value = state_province;
-                                        }
-                                        let companyInput = document.querySelector('input#Company');
-                                        if(companyInput) {
-                                            companyInput.value = currentuserCompany;
-                                        }
-                                        let jobTitleInput = document.querySelector('input#Title');
-                                        if(jobTitleInput) {
-                                            jobTitleInput.value = currentuserJob;
-                                        }
+                                    let lastNameInput = document.querySelector('input#LastName');
+                                    if (lastNameInput) {
+                                        lastNameInput.value = currentuserLastName
                                     }
+                                    let emailInput = document.querySelector('input#Email');
+                                    if (emailInput) {
+                                        emailInput.value = currentuserEmail;
+                                    }
+                                    let countryInput = document.querySelector('select#Address_Visit_Country__c');
+                                    if (countryInput) {
+                                        countryInput.value = currentuserCountry;
+                                        countryInput.dispatchEvent(new Event('change'));
+                                    }
+                                    let StateProvinceInput = document.querySelector('select#Address_Visit_State__c');
+                                    if (StateProvinceInput) {
+                                        StateProvinceInput.value = state_province;
+                                    }
+                                    let companyInput = document.querySelector('input#Company');
+                                    if (companyInput) {
+                                        companyInput.value = currentuserCompany;
+                                    }
+                                    let jobTitleInput = document.querySelector('input#Title');
+                                    if (jobTitleInput) {
+                                        jobTitleInput.value = currentuserJob;
+                                    }
+                                }
 
-                                    switch(attrs.marketoFormId) {
-                                        case "mktoForm_12281":
-                                            if(!document.querySelector('form#mktoForm_12281')) {
-                                                /*
-                                                * Date: 23-04-2021
-                                                * Below Script loads the "webMethods Integration download form" from the Marketo. This script is copied from the Marketo page: "https://info.softwareag.com/webMthodsApplicationIntegrationDownload.html"
-                                                */
-                                                (function () {
-                                                    if(!window.MktoForms2) {
-                                                        attrs.forms2MinJs.onload = function() {
-                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);  
-                                                            //Remove spinner after form is displayed
-                                                            removeFormSpinner(); 
-                                                        };
-                                                    } else {
-                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);  
-                                                        //Remove spinner after form is displayed
+                                switch (attrs.marketoFormId) {
+                                    case "mktoForm_12281":
+                                        if (!document.querySelector('form#mktoForm_12281')) {
+                                            (function () {
+                                                if (!window.MktoForms2) {
+                                                    attrs.forms2MinJs.onload = function () {
+                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);
                                                         removeFormSpinner();
-                                                    }                                               
-                                                })();
-                                            }    
-                                            break;
-                                            
-                                        case "mktoForm_12282":                                        
-                                            if(!document.querySelector('form#mktoForm_12282')) {
-                                                /*
-                                                * Date: 23-04-2021
-                                                * Below Script loads the "Adabas & Natural download form" from the Marketo. This script is copied from the Marketo page: "https://info.softwareag.com/ada_nat_docker.html"
-                                                */
-                                                (function () {
-                                                    if(!window.MktoForms2) {
-                                                        attrs.forms2MinJs.onload = function() {
-                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12282, autofillDownloadFormFields);
-                                                            //Remove spinner after form is displayed
-                                                            removeFormSpinner();  
-                                                        };
-                                                    } else {
+                                                    };
+                                                } else {
+                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);
+                                                    removeFormSpinner();
+                                                }
+                                            })();
+                                        }
+                                        break;
+
+                                    case "mktoForm_12282":
+                                        if (!document.querySelector('form#mktoForm_12282')) {
+                                            (function () {
+                                                if (!window.MktoForms2) {
+                                                    attrs.forms2MinJs.onload = function () {
                                                         var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12282, autofillDownloadFormFields);
-                                                        //Remove spinner after form is displayed
                                                         removeFormSpinner();
-                                                    }
+                                                    };
+                                                } else {
+                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12282, autofillDownloadFormFields);
+                                                    removeFormSpinner();
+                                                }
 
-                                                })();
-                                            }                                            
-                                            break;
-                                            
-                                        case "mktoForm_8655":
-                                            if(!document.querySelector('form#mktoForm_8655')) {
-                                                /*
-                                                * Date: 23-04-2021
-                                                * - Below Script loads the "webMethods Service Designer download form" from the Marketo. This script is copied from the Marketo page: "https://info.softwareag.com/019-webMethods-Service-Designer_lpp.html"
-                                                * Modified on 14-10-2021
-                                                * - Set EU countries in the dropdown list of a country field. Remove the auto-fill functionality for the Country field. [Added by Ajroddin; Date: 14-10-2021]
-                                                * - Set all countries in the dropdown list of a country field. [Added by Ajroddin; Date: 11-01-2022]
-                                                */ 
-                                                
-                                                (function () {
-                                                    if(!window.MktoForms2) {
-                                                        attrs.forms2MinJs.onload = function() {
-                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);       
-                                                            //Remove spinner after form is displayed
-                                                            removeFormSpinner();   
-                                                        };
-                                                    }else{
-                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);       
-                                                        //Remove spinner after form is displayed
-                                                        removeFormSpinner(); 
-                                                    }							
-                                                })();
-                                            }    
-                                            break;
-                                        
-                                        case "mktoForm_12313":
-                                            if(!document.querySelector('form#mktoForm_12313')) {
-                                                /*
-                                                * Date: 23-04-2021
-                                                * Below Script loads the "webMethods.io Connector Builder.Registration download form" from the Marketo. This script is copied from the Marketo page: "info.softwareag.com/002a-TECHcommunity-webMethods.ioConnectorBuilder_DemoLP.html"
-                                                */
-                                                (function () {
-                                                    if(!window.MktoForms2) {
-                                                        attrs.forms2MinJs.onload = function() {
-                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);    
-                                                            //Remove spinner after form is displayed
-                                                            removeFormSpinner();  
-                                                        };
-                                                    } else {
-                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);    
-                                                        //Remove spinner after form is displayed
-                                                        removeFormSpinner(); 
-                                                    }                                                    
-                                                })();       
-                                            }
-                                            break;
-                                        
-                                        case "mktoForm_16841":
-                                            if(!document.querySelector('form#mktoForm_16841')) {
-                                                /*
-                                                * Date: 24-11-2023
-                                                * Below Script loads the "webMethods Service Designer 11 preview download form" from the Marketo. This script is copied from the Marketo page: "//info.softwareag.com/002a-webMethods-Service-Designer-11-preview-Free-Trial-Demo-LP.html"
-                                                */
-                                                (function () {
-                                                    if(!window.MktoForms2) {
-                                                        attrs.forms2MinJs.onload = function() {
-                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 16841, autofillDownloadFormFields);    
-                                                            //Remove spinner after form is displayed
-                                                            removeFormSpinner();  
-                                                        };
-                                                    } else {
-                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 16841, autofillDownloadFormFields);    
-                                                        //Remove spinner after form is displayed
-                                                        removeFormSpinner(); 
-                                                    }                                                    
-                                                })();       
-                                            }
-                                            break;
-                                        
-                                        default:
-                                            break;
-                                    }
+                                            })();
+                                        }
+                                        break;
 
-                                } catch (e) {
-                                    console.error(e);
-                                } finally {
-                                    //Do nothing
+                                    case "mktoForm_8655":
+                                        if (!document.querySelector('form#mktoForm_8655')) {
+                                            (function () {
+                                                if (!window.MktoForms2) {
+                                                    attrs.forms2MinJs.onload = function () {
+                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);
+                                                        removeFormSpinner();
+                                                    };
+                                                } else {
+                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);
+                                                    removeFormSpinner();
+                                                }
+                                            })();
+                                        }
+                                        break;
+
+                                    case "mktoForm_12313":
+                                        if (!document.querySelector('form#mktoForm_12313')) {
+                                            (function () {
+                                                if (!window.MktoForms2) {
+                                                    attrs.forms2MinJs.onload = function () {
+                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);
+                                                        removeFormSpinner();
+                                                    };
+                                                } else {
+                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);
+                                                    removeFormSpinner();
+                                                }
+                                            })();
+                                        }
+                                        break;
+
+                                    case "mktoForm_16841":
+                                        if (!document.querySelector('form#mktoForm_16841')) {
+                                            (function () {
+                                                if (!window.MktoForms2) {
+                                                    attrs.forms2MinJs.onload = function () {
+                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 16841, autofillDownloadFormFields);
+                                                        removeFormSpinner();
+                                                    };
+                                                } else {
+                                                    var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 16841, autofillDownloadFormFields);
+                                                    removeFormSpinner();
+                                                }
+                                            })();
+                                        }
+                                        break;
+
+                                    default:
+                                        break;
                                 }
+
+                            } catch (e) {
+                                console.error(e);
+                            } finally {
+                                // Do nothing
                             }
-                            
-                        },
-                        async: false
-                        
-                    });
-                } 
-                //If User is not Logged in then redirect to Signup page.
-                else {
-                    DiscourseURL.routeToUrl('/signup');
-                }
+                        }
+
+                    },
+                    async: false
+
+                });
             }
-            return result;
-	    }
-    });    
+            else {
+                DiscourseURL.routeToUrl('/signup');
+            }
+        }
+        return result;
+    }
+});
+
+withPluginApi("1.34.0", (api) => {
+    api.registerValueTransformer(
+        "post-menu-buttons",
+        ({
+            value: dag,
+            context: {
+                post,
+                firstButtonKey, // key of the first button
+                secondLastHiddenButtonKey, // key of the second last hidden button
+                lastHiddenButtonKey, // key of the last hidden button
+            },
+        }) => {
+            const path = window.location.pathname;
+            const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
+            const munchkinJsUrl = "https://munchkin.marketo.net/munchkin.js";
+            const mktFormSupportJsUrl = "https://info.softwareag.com/js/mktFormSupport.js";
+
+            let marketoFormId = null;
+            if (/^\/t\/webmethods-free-trial-download\//.test(path)) {
+                marketoFormId = "mktoForm_12281";
+            } else if (/^\/t\/adabas-and-natural-community-edition-download-form\//.test(path)) {
+                marketoFormId = "mktoForm_12282";
+            } else if (/^\/t\/webmethods-service-designer-download-form\//.test(path)) {
+                marketoFormId = "mktoForm_8655";
+            } else if (/^\/t\/webmethods-io-connector-builder-download-form\//.test(path)) {
+                marketoFormId = "mktoForm_12313";
+            } else if (/^\/t\/webmethods-service-designer-11-1-download-form\//.test(path)) {
+                marketoFormId = "mktoForm_16841";
+            } else {
+                // Do nothing
+            }
+
+            if (marketoFormId) {
+                let forms2MinJs = document.querySelector('head script[src="' + forms2MinJsUrl + '"]');
+
+                if (!forms2MinJs) {
+                    forms2MinJs = document.createElement("script");
+                    let munchkinJs = document.createElement("script");
+                    let mktFormSupportJs = document.createElement("script");
+
+                    forms2MinJs.src = forms2MinJsUrl;
+                    forms2MinJs.setAttribute("nonce", "");
+                    document.head.appendChild(forms2MinJs);
+
+                    munchkinJs.src = munchkinJsUrl;
+                    munchkinJs.setAttribute("nonce", "");
+                    document.head.appendChild(munchkinJs);
+
+                    mktFormSupportJs.src = mktFormSupportJsUrl;
+                    mktFormSupportJs.setAttribute("nonce", "");
+                    document.head.appendChild(mktFormSupportJs);
+                }
+
+                const attrs = {
+                    forms2MinJs: forms2MinJs,
+                    marketoFormId: marketoFormId
+                };
+
+                dag.add(
+                    "download-form",
+                    DownloadFormButton,
+                    {
+                        before: [
+                            "assign", // button added by the assign plugin
+                            firstButtonKey,
+                        ],
+                    }
+                );
+            }
+        }
+    );
+});
 </script>
