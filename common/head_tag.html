@@ -340,7 +340,11 @@ withPluginApi("1.34.0", (api) => {
 
                 dag.add(
                     "download-form",
-                    DownloadFormButton,
+                    {
+                        html: () => {
+                            return api.createWidget("download_form", attrs);
+                        }
+                    },
                     {
                         before: [
                             "assign", // button added by the assign plugin
