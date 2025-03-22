@@ -1,6 +1,6 @@
 <script type="text/javascript" nonce="{{nonce}}">
 
-    import { apiInitializer } from "discourse/lib/api";
+    
 //Remove form spinner after form is loaded
 function removeFormSpinner() {
     let spinner = document.querySelector('form.marketo-form .spinner-wrapper');
@@ -15,6 +15,12 @@ var profiling = {
     alwaysShowFields: ['mktDummyEntry']
 };
 
+    </script>
+    
+<!-- Created Theme component to add Download form in Discourse [By Webdirekt on 02-11-2020] -->
+<script type="text/discourse-plugin" version="0.8">
+    
+import { apiInitializer } from "discourse/lib/api";
 var mktFormLanguage = 'English';
 
 function checkNull(value) {
