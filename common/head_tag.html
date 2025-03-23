@@ -30,27 +30,13 @@
         const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
         const munchkinJsUrl = "https://munchkin.marketo.net/munchkin.js";
         const mktFormSupportJsUrl = "https://info.softwareag.com/js/mktFormSupport.js";
-        
         let marketoFormId = null;
-        if(/^\/t\/webmethods-free-trial-download\//.test(path)) {
-            marketoFormId = "mktoForm_12281";
-        } 
-        else if(/^\/t\/adabas-and-natural-community-edition-download-form\//.test(path)) {
+        if(/^\/t\/adabas-and-natural-community-edition-download-form\//.test(path)) {
             marketoFormId = "mktoForm_12282";
-        }
-        else if(/^\/t\/webmethods-service-designer-download-form\//.test(path)) {
-            marketoFormId = "mktoForm_8655";
-        }
-        else if(/^\/t\/webmethods-io-connector-builder-download-form\//.test(path)) {
-            marketoFormId = "mktoForm_12313";
-        }
-        else if(/^\/t\/webmethods-service-designer-11-1-download-form\//.test(path)) {
-            marketoFormId = "mktoForm_16841";
         }
         else {
             //Do nothing
         }
-      
         if (helper.attrs.firstPost && marketoFormId) {
             //If required Download form javascript is not present then include it dynamically in the head tag. 
             let forms2MinJs = document.querySelector('head script[src="' + forms2MinJsUrl + '"]');
@@ -72,14 +58,11 @@
                 mktFormSupportJs.setAttribute("nonce", "");
                 document.head.appendChild(mktFormSupportJs);
             }
-
             helper.attrs.forms2MinJs = forms2MinJs;
-        
             helper.attrs.marketoFormId = marketoFormId;
             //Rendering download form based on the current topic.
             return helper.attach("download_form", helper.attrs); 
         } 
-    
     }); 
     
     function checkNull(value) {
