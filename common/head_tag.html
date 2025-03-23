@@ -24,7 +24,7 @@
         
 	
     /* Below code will render "download_form" widget before rendering "post-menu" widget on Topic page*/
-    api.decorateWidget("post-menu:before", helper => {
+    api.decorateWidget("home-logo:after", helper => {
         const path = window.location.pathname;
         //Required javascripts for the download form   
         const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
