@@ -27,12 +27,12 @@
     api.decorateWidget("post-body:after", helper => {
         const path = window.location.pathname;
         //Required javascripts for the download form   
-        const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
+        const forms2MinJsUrl = "https://discover.softwareag.com/js/forms2/js/forms2.min.js";
         const munchkinJsUrl = "https://munchkin.marketo.net/munchkin.js";
-        const mktFormSupportJsUrl = "https://info.softwareag.com/js/mktFormSupport.js";
+        const mktFormSupportJsUrl = "https://discover.softwareag.com/js/mktFormSupport.js";
         let marketoFormId = null;
         if(/^\/t\/adabas-and-natural-community-edition-download-form\//.test(path)) {
-            marketoFormId = "mktoForm_12282";
+            marketoFormId = "mktoForm_1037";
         }
         else {
             //Do nothing
