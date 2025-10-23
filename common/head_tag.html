@@ -249,27 +249,6 @@
                                     }
 
                                     switch(attrs.marketoFormId) {
-                                        case "mktoForm_12281":
-                                            if(!document.querySelector('form#mktoForm_12281')) {
-                                                /*
-                                                * Date: 23-04-2021
-                                                * Below Script loads the "webMethods Integration download form" from the Marketo. This script is copied from the Marketo page: "https://info.softwareag.com/webMthodsApplicationIntegrationDownload.html"
-                                                */
-                                                (function () {
-                                                    if(!window.MktoForms2) {
-                                                        attrs.forms2MinJs.onload = function() {
-                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);  
-                                                            //Remove spinner after form is displayed
-                                                            removeFormSpinner(); 
-                                                        };
-                                                    } else {
-                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12281, autofillDownloadFormFields);  
-                                                        //Remove spinner after form is displayed
-                                                        removeFormSpinner();
-                                                    }                                               
-                                                })();
-                                            }    
-                                            break;
                                             
                                         case "mktoForm_12282":                                        
                                             if(!document.querySelector('form#mktoForm_12282')) {
@@ -294,75 +273,6 @@
                                             }                                            
                                             break;
                                             
-                                        case "mktoForm_8655":
-                                            if(!document.querySelector('form#mktoForm_8655')) {
-                                                /*
-                                                * Date: 23-04-2021
-                                                * - Below Script loads the "webMethods Service Designer download form" from the Marketo. This script is copied from the Marketo page: "https://info.softwareag.com/019-webMethods-Service-Designer_lpp.html"
-                                                * Modified on 14-10-2021
-                                                * - Set EU countries in the dropdown list of a country field. Remove the auto-fill functionality for the Country field. [Added by Ajroddin; Date: 14-10-2021]
-                                                * - Set all countries in the dropdown list of a country field. [Added by Ajroddin; Date: 11-01-2022]
-                                                */ 
-                                                
-                                                (function () {
-                                                    if(!window.MktoForms2) {
-                                                        attrs.forms2MinJs.onload = function() {
-                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);       
-                                                            //Remove spinner after form is displayed
-                                                            removeFormSpinner();   
-                                                        };
-                                                    }else{
-                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 8655, autofillDownloadFormFields);       
-                                                        //Remove spinner after form is displayed
-                                                        removeFormSpinner(); 
-                                                    }							
-                                                })();
-                                            }    
-                                            break;
-                                        
-                                        case "mktoForm_12313":
-                                            if(!document.querySelector('form#mktoForm_12313')) {
-                                                /*
-                                                * Date: 23-04-2021
-                                                * Below Script loads the "webMethods.io Connector Builder.Registration download form" from the Marketo. This script is copied from the Marketo page: "info.softwareag.com/002a-TECHcommunity-webMethods.ioConnectorBuilder_DemoLP.html"
-                                                */
-                                                (function () {
-                                                    if(!window.MktoForms2) {
-                                                        attrs.forms2MinJs.onload = function() {
-                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);    
-                                                            //Remove spinner after form is displayed
-                                                            removeFormSpinner();  
-                                                        };
-                                                    } else {
-                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 12313, autofillDownloadFormFields);    
-                                                        //Remove spinner after form is displayed
-                                                        removeFormSpinner(); 
-                                                    }                                                    
-                                                })();       
-                                            }
-                                            break;
-                                        
-                                        case "mktoForm_16841":
-                                            if(!document.querySelector('form#mktoForm_16841')) {
-                                                /*
-                                                * Date: 24-11-2023
-                                                * Below Script loads the "webMethods Service Designer 11 preview download form" from the Marketo. This script is copied from the Marketo page: "//info.softwareag.com/002a-webMethods-Service-Designer-11-preview-Free-Trial-Demo-LP.html"
-                                                */
-                                                (function () {
-                                                    if(!window.MktoForms2) {
-                                                        attrs.forms2MinJs.onload = function() {
-                                                            var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 16841, autofillDownloadFormFields);    
-                                                            //Remove spinner after form is displayed
-                                                            removeFormSpinner();  
-                                                        };
-                                                    } else {
-                                                        var form = MktoForms2.loadForm("//info.softwareag.com", "858-DJP-749", 16841, autofillDownloadFormFields);    
-                                                        //Remove spinner after form is displayed
-                                                        removeFormSpinner(); 
-                                                    }                                                    
-                                                })();       
-                                            }
-                                            break;
                                         
                                         default:
                                             break;
