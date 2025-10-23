@@ -18,22 +18,96 @@
 </script>
     
 <!-- Created Theme component to add Download form in Discourse [By Webdirekt on 02-11-2020] -->
-<script type="text/discourse-plugin" version="0.8">
-    const { h } = require('virtual-dom');
-    const DiscourseURL = require('discourse/lib/url').default;    
+// javascripts/discourse/initializers/download-form.js
+
+import {apiInitializer} from "discourse/lib/api";
+import DownloadForm from "../components/download-form";
+
+export default apiInitializer((api) => {
+  api.renderAfterWrapperOutlet("post-article", DownloadForm);
+});  
         
 	
     /* Below code will render "download_form" widget before rendering "post-menu" widget on Topic page*/
-    api.decorateWidget("post-body:after", helper => {
-        const path = window.location.pathname;
-        //Required javascripts for the download form   
-        const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
-        const munchkinJsUrl = "https://munchkin.marketo.net/munchkin.js";
-        const mktFormSupportJsUrl = "https://info.softwareag.com/js/mktFormSupport.js";
-        let marketoFormId = null;
-        if(/^\/t\/adabas-and-natural-community-edition-download-form\//.test(path)) {
-            marketoFormId = "mktoForm_12282";
-        }
+
+// javascripts/discourse/components/download-form.gjs
+
+import Component from "@glimmer/component";
+import didInsert from "@ember/render-modifiers/modifiers/did-insert";
+import {service} from "@ember/service";
+import {tracked} from "@glimmer/tracking";
+import {bind} from "discourse/lib/decorators";
+
+// Required javascripts for the download form
+const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
+const munchkinJsUrl = "https://munchkin.marketo.net/munchkin.js";
+const mktFormSupportJsUrl = "https://info.softwareag.com/js/mktFormSupport.js";
+
+function checkNull(value) {
+  if (typeof (value) != "undefined" && value != null && value != 'null') {
+    return value;
+  }
+  return "";
+}
+
+export default class DownloadForm extends Component {
+  static getMarketoFormId(slug) {
+    switch (slug) {
+      case "adabas-and-natural-community-edition-download-form":
+        return "mktoForm_12282";
+    }
+  }
+
+  static shouldRender(args, context, owner) {
+    if (!args.post.firstPost) {
+      return false;
+    }
+
+    const currentTopic = owner.lookup("service:header").topicInfo
+    return currentTopic && DownloadForm.getMarketoFormId(currentTopic.slug)
+  }
+
+  @service currentUser;
+  @service header;
+  @tracked forms2MinJs;
+
+  get marketoFormId() {
+    return DownloadForm.getMarketoFormId(this.header.topicInfo.slug);
+  }
+
+  @bind
+  loadJS() {
+    let forms2MinJs = document.querySelector(`head script[src="${forms2MinJsUrl}"]`);
+
+    if (!forms2MinJs) {
+      forms2MinJs = document.createElement("script");
+      let munchkinJs = document.createElement("script");
+      let mktFormSupportJs = document.createElement("script");
+
+      forms2MinJs.src = forms2MinJsUrl;
+      forms2MinJs.setAttribute("nonce", "");
+      document.head.appendChild(forms2MinJs);
+
+      munchkinJs.src = munchkinJsUrl;
+      munchkinJs.setAttribute("nonce", "");
+      document.head.appendChild(munchkinJs);
+
+      mktFormSupportJs.src = mktFormSupportJsUrl;
+      mktFormSupportJs.setAttribute("nonce", "");
+      document.head.appendChild(mktFormSupportJs);
+    }
+
+    this.forms2MinJs = forms2MinJs;
+  }
+
+  <template>
+    <div class="d-form"
+      {{didInsert this.loadJS}}
+    >
+
+    </div>
+  </template>
+}
         else {
             //Do nothing
         }
