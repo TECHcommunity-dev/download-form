@@ -16,100 +16,86 @@
 
     var mktFormLanguage = 'English'
 </script>
-
-<!-- Updates Felix: javascript downloads] -->
-
-// javascripts/discourse/initializers/download-form.js
-
-import {apiInitializer} from "discourse/lib/api";
-import DownloadForm from "../components/download-form";
-
-export default apiInitializer((api) => {
-  api.renderAfterWrapperOutlet("post-article", DownloadForm);
-});
-
-<!-- Updates Felix] -->
-
-// javascripts/discourse/components/download-form.gjs
-
-import Component from "@glimmer/component";
-import didInsert from "@ember/render-modifiers/modifiers/did-insert";
-import {service} from "@ember/service";
-import {tracked} from "@glimmer/tracking";
-import {bind} from "discourse/lib/decorators";
-
-// Required javascripts for the download form
-const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
-const munchkinJsUrl = "https://munchkin.marketo.net/munchkin.js";
-const mktFormSupportJsUrl = "https://info.softwareag.com/js/mktFormSupport.js";
-
-function checkNull(value) {
-  if (typeof (value) != "undefined" && value != null && value != 'null') {
-    return value;
-  }
-  return "";
-}
-
-export default class DownloadForm extends Component {
-  static getMarketoFormId(slug) {
-    switch (slug) {
-      case "adabas-and-natural-community-edition-download-form":
-        return "mktoForm_12282";
-    }
-  }
-
-  static shouldRender(args, context, owner) {
-    if (!args.post.firstPost) {
-      return false;
-    }
-
-    const currentTopic = owner.lookup("service:header").topicInfo
-    return currentTopic && DownloadForm.getMarketoFormId(currentTopic.slug)
-  }
-
-  @service currentUser;
-  @service header;
-  @tracked forms2MinJs;
-
-  get marketoFormId() {
-    return DownloadForm.getMarketoFormId(this.header.topicInfo.slug);
-  }
-
-  @bind
-  loadJS() {
-    let forms2MinJs = document.querySelector(`head script[src="${forms2MinJsUrl}"]`);
-
-    if (!forms2MinJs) {
-      forms2MinJs = document.createElement("script");
-      let munchkinJs = document.createElement("script");
-      let mktFormSupportJs = document.createElement("script");
-
-      forms2MinJs.src = forms2MinJsUrl;
-      forms2MinJs.setAttribute("nonce", "");
-      document.head.appendChild(forms2MinJs);
-
-      munchkinJs.src = munchkinJsUrl;
-      munchkinJs.setAttribute("nonce", "");
-      document.head.appendChild(munchkinJs);
-
-      mktFormSupportJs.src = mktFormSupportJsUrl;
-      mktFormSupportJs.setAttribute("nonce", "");
-      document.head.appendChild(mktFormSupportJs);
-    }
-
-    this.forms2MinJs = forms2MinJs;
-  }
-
-  <template>
-    <div class="d-form"
-      {{didInsert this.loadJS}}
-    >
-
-    </div>
-  </template>
-}
     
-   
+<!-- Created Theme component to add Download form in Discourse [By Webdirekt on 02-11-2020] -->
+<script type="text/discourse-plugin" version="0.8">
+    const { h } = require('virtual-dom');
+    const DiscourseURL = require('discourse/lib/url').default;    
+        
+	
+    /* Below code will render "download_form" widget before rendering "post-menu" widget on Topic page*/
+    api.decorateWidget("post-body:after", helper => {
+        const path = window.location.pathname;
+        //Required javascripts for the download form   
+        const forms2MinJsUrl = "https://info.softwareag.com/js/forms2/js/forms2.min.js";
+        const munchkinJsUrl = "https://munchkin.marketo.net/munchkin.js";
+        const mktFormSupportJsUrl = "https://info.softwareag.com/js/mktFormSupport.js";
+        let marketoFormId = null;
+        if(/^\/t\/adabas-and-natural-community-edition-download-form\//.test(path)) {
+            marketoFormId = "mktoForm_12282";
+        }
+        else {
+            //Do nothing
+        }
+        if (helper.attrs.firstPost && marketoFormId) {
+            //If required Download form javascript is not present then include it dynamically in the head tag. 
+            let forms2MinJs = document.querySelector('head script[src="' + forms2MinJsUrl + '"]');
+		
+            if(!forms2MinJs) {
+                forms2MinJs = document.createElement("script");
+                let munchkinJs = document.createElement("script");
+                let mktFormSupportJs = document.createElement("script");
+
+                forms2MinJs.src = forms2MinJsUrl;	
+                forms2MinJs.setAttribute("nonce", "");
+                document.head.appendChild(forms2MinJs);
+
+                munchkinJs.src = munchkinJsUrl;
+                munchkinJs.setAttribute("nonce", "");
+                document.head.appendChild(munchkinJs);
+
+                mktFormSupportJs.src = mktFormSupportJsUrl;
+                mktFormSupportJs.setAttribute("nonce", "");
+                document.head.appendChild(mktFormSupportJs);
+            }
+            helper.attrs.forms2MinJs = forms2MinJs;
+            helper.attrs.marketoFormId = marketoFormId;
+            //Rendering download form based on the current topic.
+            return helper.attach("download_form", helper.attrs); 
+        } 
+    }); 
+    
+    function checkNull(value) {
+        if(typeof(value) != "undefined" && value != null && value !='null') {
+            return value;
+        } 
+        return "";
+    }
+    
+    /* Created new download_form widget which will display only if current URL contains  "/t/webmethods-free-trial/" */
+    api.createWidget("download_form", {
+        tagName: "div.d-form",
+        buildKey: () => "download_form",
+        html(attrs) {    
+            let userFields = this.site.get("user_fields");
+            let result = [];
+            const path = window.location.pathname;
+		
+            if(true) {
+                //Comment the below code to change the way for getting Username as latest versions of Discourse do not have support for the "Discourse.User.currentPro". [Modified by: Saurabh; Date: 14-10-2021]
+                var currentuser = api.getCurrentUser(); 
+                var currentusername;
+                if(currentuser){
+                    currentusername = currentuser.username;
+                }
+                if (currentusername  && typeof currentusername !== 'undefined'){
+                    var fulllinktojson = "/users/" + currentusername + ".json"; 
+                    
+                    $.ajax({
+                        type: 'GET',
+                        url: fulllinktojson,
+                        dataType: 'json',
+                        success: function(json) {
                             //List if banned countries
                             let bannedCountries = ["Afghanistan","Algeria","Angola","Armenia","Azerbaijan","Belarus","Birma/Myanmar","Burundi","Cambodia","Central African Republic","China","Congo","Cyprus","Democratic Rep. Of Congo","Egypt","Eritrea","Ethiopia","Georgia","Guinea","Guinea-Bissau","Haiti","Iraq","Israel","Jordan","Kazakhstan","Kyrgyzstan","Laos","Lebanon","Libya","Macau","Mali","Moldova","Mongolia","Mozambique","Myanmar","Nigeria","Pakistan","Russia","Russian federation","Somalia","South Sudan","Sri Lanka","Tajikistan","Tanzania","Tunisia","Turkmenistan","Uganda","Ukraine","Uzbekistan","Venezuela","Vietnam","Yemen","Zimbabwe"];
                             // Binjan; 2023.07.18; banned email domains
